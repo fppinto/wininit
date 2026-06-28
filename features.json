@@ -1,0 +1,354 @@
+{
+  "_comment": "Single source of truth for the WinInit UI's per-feature granularity. 'groups' map to [features] toggle keys '<module>.<key>' read by Test-Feature in lib/common.ps1. 'items' map to skip-list entries in the section named by 'skipSection' (checked = perform action, unchecked = added to skip list).",
+  "modules": [
+    {
+      "id": "01-PackageManagers", "name": "Package Managers", "type": "groups",
+      "groups": [
+        { "key": "winget", "label": "winget", "desc": "Microsoft App Installer / winget" },
+        { "key": "scoop",  "label": "Scoop",  "desc": "Scoop user-scope package manager + buckets" },
+        { "key": "choco",  "label": "Chocolatey", "desc": "Chocolatey machine-scope package manager" }
+      ]
+    },
+    {
+      "id": "02-Applications", "name": "Applications", "type": "list", "skipSection": "apps",
+      "items": [
+        { "id": "Google.Chrome", "name": "Google Chrome", "cat": "Browsers" },
+        { "id": "Mozilla.Firefox", "name": "Mozilla Firefox", "cat": "Browsers" },
+        { "id": "eloston.ungoogled-chromium", "name": "Ungoogled Chromium", "cat": "Browsers" },
+        { "id": "WhatsApp.WhatsApp", "name": "WhatsApp", "cat": "Communication" },
+        { "id": "Telegram.TelegramDesktop", "name": "Telegram", "cat": "Communication" },
+        { "id": "Microsoft.VisualStudioCode", "name": "Visual Studio Code", "cat": "Dev" },
+        { "id": "Microsoft.VisualStudio.2026.Community", "name": "Visual Studio 2026", "cat": "Dev" },
+        { "id": "Google.AndroidStudio", "name": "Android Studio", "cat": "Dev" },
+        { "id": "Microsoft.VisualStudio.2022.BuildTools", "name": "VS Build Tools (MSVC C++)", "cat": "Dev" },
+        { "id": "MSYS2.MSYS2", "name": "MinGW-w64 (MSYS2)", "cat": "Dev" },
+        { "id": "Git.Git", "name": "Git", "cat": "Dev" },
+        { "id": "GitHub.GitHubDesktop", "name": "GitHub Desktop", "cat": "Dev" },
+        { "id": "Docker.DockerDesktop", "name": "Docker Desktop", "cat": "Dev" },
+        { "id": "Microsoft.PowerShell", "name": "PowerShell 7", "cat": "Dev" },
+        { "id": "Kitware.CMake", "name": "CMake", "cat": "Dev" },
+        { "id": "AutoIt.AutoIt", "name": "AutoIt", "cat": "Dev" },
+        { "id": "Python.Python.2", "name": "Python 2.7", "cat": "Python" },
+        { "id": "Python.Python.3.12", "name": "Python 3.12", "cat": "Python" },
+        { "id": "Anaconda.Anaconda3", "name": "Anaconda", "cat": "Python" },
+        { "id": "Obsidian.Obsidian", "name": "Obsidian", "cat": "Notes" },
+        { "id": "Nextcloud.NextcloudDesktop", "name": "Nextcloud Desktop", "cat": "Notes" },
+        { "id": "Anthropic.Claude", "name": "Claude", "cat": "AI/ML" },
+        { "id": "Element.LMStudio", "name": "LM Studio", "cat": "AI/ML" },
+        { "id": "Ollama.Ollama", "name": "Ollama", "cat": "AI/ML" },
+        { "id": "MintplexLabs.AnythingLLM", "name": "AnythingLLM", "cat": "AI/ML" },
+        { "id": "PuTTY.PuTTY", "name": "PuTTY", "cat": "Network" },
+        { "id": "WinSCP.WinSCP", "name": "WinSCP", "cat": "Network" },
+        { "id": "TimKosse.FileZilla.Client", "name": "FileZilla", "cat": "Network" },
+        { "id": "OpenVPNTechnologies.OpenVPN", "name": "OpenVPN GUI", "cat": "VPN" },
+        { "id": "OpenVPNTechnologies.OpenVPNConnect", "name": "OpenVPN Connect", "cat": "VPN" },
+        { "id": "Bitwarden.Bitwarden", "name": "Bitwarden", "cat": "Security" },
+        { "id": "DominikReichl.KeePass", "name": "KeePass", "cat": "Security" },
+        { "id": "KeePassXCTeam.KeePassXC", "name": "KeePassXC", "cat": "Security" },
+        { "id": "7zip.7zip", "name": "7-Zip", "cat": "Utilities" },
+        { "id": "AnyBurn.AnyBurn", "name": "AnyBurn", "cat": "Utilities" },
+        { "id": "WinDirStat.WinDirStat", "name": "WinDirStat", "cat": "Utilities" },
+        { "id": "voidtools.Everything", "name": "Everything Search", "cat": "Utilities" },
+        { "id": "FontBase.FontBase", "name": "FontBase", "cat": "Utilities" },
+        { "id": "Microsoft.PowerToys", "name": "PowerToys", "cat": "Utilities" },
+        { "id": "GIMP.GIMP", "name": "GIMP", "cat": "Graphics/Media" },
+        { "id": "Inkscape.Inkscape", "name": "Inkscape", "cat": "Graphics/Media" },
+        { "id": "ArtifexSoftware.GhostScript", "name": "Ghostscript", "cat": "Graphics/Media" },
+        { "id": "HandBrake.HandBrake", "name": "HandBrake", "cat": "Graphics/Media" },
+        { "id": "ShareX.ShareX", "name": "ShareX", "cat": "Graphics/Media" },
+        { "id": "Notepad++.Notepad++", "name": "Notepad++", "cat": "Editors" },
+        { "id": "Rufus.Rufus", "name": "Rufus", "cat": "Bootable USB" },
+        { "id": "Ventoy.Ventoy", "name": "Ventoy", "cat": "Bootable USB" },
+        { "id": "qBittorrent.qBittorrent", "name": "qBittorrent", "cat": "Torrents" },
+        { "id": "angryziber.AngryIPScanner", "name": "Angry IP Scanner", "cat": "Network" },
+        { "id": "mRemoteNG.mRemoteNG", "name": "mRemoteNG", "cat": "Network" },
+        { "id": "WinMerge.WinMerge", "name": "WinMerge", "cat": "Utilities" },
+        { "id": "Oracle.VirtualBox", "name": "VirtualBox", "cat": "Virtualization" },
+        { "id": "IDRIX.VeraCrypt", "name": "VeraCrypt", "cat": "Security" },
+        { "id": "ArduinoSA.IDE.stable", "name": "Arduino IDE", "cat": "Electronics" }
+      ]
+    },
+    {
+      "id": "03-DesktopEnvironment", "name": "Desktop Environment", "type": "groups",
+      "groups": [
+        { "key": "darkmode", "label": "Dark mode", "desc": "System + app + legacy Win32 dark theme" },
+        { "key": "wallpaper", "label": "Dark wallpaper", "desc": "Set graphite solid wallpaper" },
+        { "key": "accent", "label": "Accent color", "desc": "Slate accent, disable transparency/peek" },
+        { "key": "taskbar", "label": "Taskbar tweaks", "desc": "Search box, Task View, Widgets, Copilot, alignment, Bing-block hosts" },
+        { "key": "taskbar_pins", "label": "Taskbar / Start pins", "desc": "Unpin MS bloat, pin Explorer/Terminal/Firefox" },
+        { "key": "explorer", "label": "File Explorer", "desc": "Extensions, hidden files, This PC, Quick Access" },
+        { "key": "context_menu", "label": "Classic context menu", "desc": "Restore Win10 right-click menu" },
+        { "key": "mouse", "label": "Mouse acceleration", "desc": "Disable pointer acceleration" },
+        { "key": "search_service", "label": "Disable Search indexing", "desc": "Stop WSearch + disable indexing" },
+        { "key": "power", "label": "Power settings", "desc": "Never sleep/hibernate on AC" },
+        { "key": "lockscreen_ads", "label": "Lock screen ads", "desc": "Disable tips, suggested apps, spotlight" },
+        { "key": "startup_delay", "label": "Startup delay", "desc": "Remove startup app delay" },
+        { "key": "telemetry", "label": "Telemetry annihilation", "desc": "Large block: telemetry services, tasks, hosts, exe neutralization" },
+        { "key": "msaccount_nag", "label": "MS account nags", "desc": "Disable account/Office sign-in prompts" },
+        { "key": "decloud", "label": "Decloudify", "desc": "Widgets, Copilot, Phone Link, sync, Family, Storage Sense" },
+        { "key": "tips_dpi_lockscreen", "label": "Tips / DPI / drive labels", "desc": "First-run bypass, 100% DPI, lock screen, drive labels" }
+      ]
+    },
+    {
+      "id": "04-OneDriveRemoval", "name": "OneDrive Removal", "type": "groups",
+      "groups": [
+        { "key": "uninstall", "label": "Uninstall OneDrive", "desc": "Kill processes, run uninstaller, remove UWP package" },
+        { "key": "prevent_reinstall", "label": "Prevent reinstall", "desc": "Policy + startup entries block re-add" },
+        { "key": "explorer_integration", "label": "Explorer integration", "desc": "Remove sidebar, namespaces, context menu, shell folders" },
+        { "key": "cleanup", "label": "Cleanup", "desc": "Remove folders, cache, env vars, scheduled tasks, notifications" }
+      ]
+    },
+    {
+      "id": "05-Performance", "name": "Performance", "type": "groups",
+      "groups": [
+        { "key": "sysmain", "label": "Disable SysMain", "desc": "Superfetch/SysMain service + prefetch" },
+        { "key": "gamebar", "label": "Disable Game Bar / DVR", "desc": "Game Bar, Game DVR, remove overlays" },
+        { "key": "hibernation", "label": "Disable hibernation", "desc": "powercfg /hibernate off" },
+        { "key": "background_apps", "label": "Disable background apps", "desc": "Block UWP apps running in background" }
+      ]
+    },
+    {
+      "id": "06-Debloat", "name": "Debloat", "type": "list+groups", "skipSection": "debloat",
+      "groups": [
+        { "key": "xbox", "label": "Remove Xbox stack", "desc": "Xbox packages, services, tasks, policy" },
+        { "key": "onenote", "label": "Remove OneNote desktop", "desc": "Uninstall desktop OneNote" },
+        { "key": "disable_store_reinstall", "label": "Block Store auto-reinstall", "desc": "Stop removed apps coming back" }
+      ],
+      "items": [
+        { "id": "Microsoft.BingNews", "name": "Bing News" },
+        { "id": "Microsoft.BingWeather", "name": "Bing Weather" },
+        { "id": "Microsoft.BingFinance", "name": "Bing Finance" },
+        { "id": "Microsoft.BingSports", "name": "Bing Sports" },
+        { "id": "Microsoft.GamingApp", "name": "Xbox Gaming App" },
+        { "id": "Microsoft.MicrosoftSolitaireCollection", "name": "Solitaire Collection" },
+        { "id": "Microsoft.WindowsFeedbackHub", "name": "Feedback Hub" },
+        { "id": "Microsoft.Xbox.TCUI", "name": "Xbox TCUI" },
+        { "id": "Microsoft.XboxApp", "name": "Xbox App" },
+        { "id": "Microsoft.XboxGameOverlay", "name": "Xbox Game Overlay" },
+        { "id": "Microsoft.XboxGamingOverlay", "name": "Xbox Gaming Overlay" },
+        { "id": "Microsoft.XboxIdentityProvider", "name": "Xbox Identity Provider" },
+        { "id": "Microsoft.XboxSpeechToTextOverlay", "name": "Xbox Speech To Text" },
+        { "id": "Microsoft.People", "name": "People" },
+        { "id": "microsoft.windowscommunicationsapps", "name": "Mail & Calendar" },
+        { "id": "Microsoft.YourPhone", "name": "Phone Link (Your Phone)" },
+        { "id": "Microsoft.WindowsMaps", "name": "Maps" },
+        { "id": "Microsoft.Todos", "name": "Microsoft To Do" },
+        { "id": "Microsoft.OutlookForWindows", "name": "New Outlook" },
+        { "id": "Microsoft.ZuneMusic", "name": "Media Player (Groove)" },
+        { "id": "Microsoft.ZuneVideo", "name": "Movies & TV" },
+        { "id": "Microsoft.WindowsSoundRecorder", "name": "Sound Recorder" },
+        { "id": "Microsoft.MicrosoftOfficeHub", "name": "Office Hub (Get Office)" },
+        { "id": "Clipchamp.Clipchamp", "name": "Clipchamp" },
+        { "id": "Microsoft.Windows.Photos", "name": "Photos" },
+        { "id": "Microsoft.ScreenSketch", "name": "Snipping Tool" },
+        { "id": "Microsoft.WindowsNotepad", "name": "Notepad (Store)" },
+        { "id": "Microsoft.Whiteboard", "name": "Whiteboard" },
+        { "id": "Microsoft.SketchPad", "name": "Sketchpad" },
+        { "id": "Microsoft.MicrosoftJournal", "name": "Journal" },
+        { "id": "*Ink*", "name": "Ink apps (wildcard)" },
+        { "id": "SpotifyAB.SpotifyMusic", "name": "Spotify" },
+        { "id": "*CandyCrush*", "name": "Candy Crush (wildcard)" },
+        { "id": "*BubbleWitch*", "name": "Bubble Witch (wildcard)" },
+        { "id": "*Dolby*", "name": "Dolby (wildcard)" },
+        { "id": "*Disney*", "name": "Disney+ (wildcard)" },
+        { "id": "*TikTok*", "name": "TikTok (wildcard)" },
+        { "id": "*Twitter*", "name": "Twitter/X (wildcard)" },
+        { "id": "*Instagram*", "name": "Instagram (wildcard)" },
+        { "id": "*Facebook*", "name": "Facebook (wildcard)" },
+        { "id": "*Netflix*", "name": "Netflix (wildcard)" },
+        { "id": "*Hulu*", "name": "Hulu (wildcard)" },
+        { "id": "*Amazon*", "name": "Amazon (wildcard)" },
+        { "id": "*LinkedIn*", "name": "LinkedIn (wildcard)" },
+        { "id": "*AdobeExpress*", "name": "Adobe Express (wildcard)" },
+        { "id": "Microsoft.Getstarted", "name": "Get Started / Tips" },
+        { "id": "Microsoft.GetHelp", "name": "Get Help" },
+        { "id": "Microsoft.BingSearch", "name": "Bing Search" },
+        { "id": "Microsoft.Office.OneNote", "name": "OneNote (Store)" },
+        { "id": "Microsoft.MicrosoftOffice.OneNote", "name": "OneNote (alt)" },
+        { "id": "*OneNote*", "name": "OneNote (wildcard)" },
+        { "id": "Microsoft.MixedReality.Portal", "name": "Mixed Reality Portal" },
+        { "id": "Microsoft.3DBuilder", "name": "3D Builder" },
+        { "id": "Microsoft.Microsoft3DViewer", "name": "3D Viewer" },
+        { "id": "Microsoft.Print3D", "name": "Print 3D" },
+        { "id": "Microsoft.OneConnect", "name": "Mobile Plans (OneConnect)" },
+        { "id": "Microsoft.WindowsAlarms", "name": "Alarms & Clock" },
+        { "id": "Microsoft.PowerAutomateDesktop", "name": "Power Automate Desktop" },
+        { "id": "Microsoft.Copilot", "name": "Copilot" },
+        { "id": "Microsoft.549981C3F5F10", "name": "Cortana" },
+        { "id": "MicrosoftCorporationII.QuickAssist", "name": "Quick Assist" },
+        { "id": "MicrosoftTeams", "name": "Teams (personal)" },
+        { "id": "MSTeams", "name": "Teams (new)" },
+        { "id": "Microsoft.MicrosoftStickyNotes", "name": "Sticky Notes" }
+      ]
+    },
+    {
+      "id": "07-Privacy", "name": "Privacy", "type": "groups",
+      "groups": [
+        { "key": "wifi_sense", "label": "Wi-Fi Sense", "desc": "Disable auto-connect to open networks" },
+        { "key": "clipboard", "label": "Clipboard cloud sync", "desc": "Disable cross-device clipboard + history" },
+        { "key": "timeline", "label": "Timeline", "desc": "Disable activity feed upload" },
+        { "key": "smartscreen", "label": "SmartScreen", "desc": "Disable app/download SmartScreen" },
+        { "key": "delivery_opt", "label": "Delivery Optimization", "desc": "Disable P2P update sharing" },
+        { "key": "telemetry", "label": "Telemetry & diagnostics", "desc": "DiagTrack, WAP push, CEIP, AIT" },
+        { "key": "advertising", "label": "Advertising ID", "desc": "Disable ad ID (user + machine)" },
+        { "key": "location", "label": "Location & sensors", "desc": "Disable location/sensor tracking" },
+        { "key": "camera_mic", "label": "Camera & mic default deny", "desc": "Block app access by default" },
+        { "key": "inking", "label": "Inking & typing", "desc": "Disable handwriting/typing collection" },
+        { "key": "tailored", "label": "Tailored experiences", "desc": "Spotlight, tips, consumer features" },
+        { "key": "wer", "label": "Windows Error Reporting", "desc": "Disable WER service + consent" },
+        { "key": "cortana_search", "label": "Cortana & web search", "desc": "Disable Cortana + Bing search" },
+        { "key": "copilot_ai", "label": "Copilot & Recall", "desc": "Disable Copilot + Windows Recall" },
+        { "key": "feedback", "label": "Feedback prompts", "desc": "Disable feedback notifications" },
+        { "key": "telemetry_hosts", "label": "Block telemetry hosts", "desc": "Add MS telemetry domains to hosts file (off by default)", "default": false }
+      ]
+    },
+    {
+      "id": "08-QualityOfLife", "name": "Quality of Life", "type": "groups",
+      "groups": [
+        { "key": "numlock", "label": "NumLock at boot", "desc": "Enable NumLock at login" },
+        { "key": "sticky_keys", "label": "Disable sticky/filter keys", "desc": "Kill accessibility hotkeys" },
+        { "key": "default_terminal", "label": "Default terminal", "desc": "Windows Terminal + PowerShell 7 default" },
+        { "key": "terminal_context", "label": "'Open in Terminal' always", "desc": "Show without Shift key" },
+        { "key": "locale", "label": "Set locale en-US", "desc": "Language, region, keyboard to en-US" },
+        { "key": "long_paths", "label": "Long path support", "desc": "Remove 260-char path limit" },
+        { "key": "exec_policy", "label": "PS execution policy", "desc": "Set to Unrestricted" }
+      ]
+    },
+    {
+      "id": "09-Services", "name": "Services", "type": "list+groups", "skipSection": "services",
+      "groups": [
+        { "key": "ink_workspace", "label": "Disable Windows Ink", "desc": "Ink services, apps, scheduled task" }
+      ],
+      "items": [
+        { "id": "lfsvc", "name": "Geolocation Service" },
+        { "id": "MapsBroker", "name": "Downloaded Maps Manager" },
+        { "id": "PcaSvc", "name": "Program Compatibility Assistant" },
+        { "id": "CDPSvc", "name": "Connected Devices Platform" },
+        { "id": "CDPUserSvc", "name": "Connected Devices Platform User" },
+        { "id": "TrkWks", "name": "Distributed Link Tracking" },
+        { "id": "WpcMonSvc", "name": "Parental Controls" },
+        { "id": "TabletInputService", "name": "Touch Keyboard & Handwriting" },
+        { "id": "XboxGipSvc", "name": "Xbox Accessory Management" },
+        { "id": "XblAuthManager", "name": "Xbox Live Auth Manager" },
+        { "id": "XblGameSave", "name": "Xbox Live Game Save" },
+        { "id": "XboxNetApiSvc", "name": "Xbox Live Networking" },
+        { "id": "DiagTrack", "name": "Connected User Experiences (telemetry)" },
+        { "id": "dmwappushservice", "name": "WAP Push Message Routing" },
+        { "id": "WerSvc", "name": "Windows Error Reporting" },
+        { "id": "SysMain", "name": "Superfetch/SysMain" },
+        { "id": "diagnosticshub.standardcollector.service", "name": "Diagnostics Hub Collector" },
+        { "id": "DPS", "name": "Diagnostic Policy Service" },
+        { "id": "WdiServiceHost", "name": "Diagnostic Service Host" },
+        { "id": "WdiSystemHost", "name": "Diagnostic System Host" },
+        { "id": "Fax", "name": "Fax" },
+        { "id": "wisvc", "name": "Windows Insider Service" },
+        { "id": "PhoneSvc", "name": "Phone Service" },
+        { "id": "RetailDemo", "name": "Retail Demo Service" },
+        { "id": "WbioSrvc", "name": "Windows Biometric Service" }
+      ]
+    },
+    {
+      "id": "10-NetworkPerformance", "name": "Network Performance", "type": "groups",
+      "groups": [
+        { "key": "nagle", "label": "Disable Nagle", "desc": "Lower TCP latency on all interfaces" },
+        { "key": "paging_executive", "label": "Disable Paging Executive", "desc": "Keep kernel in RAM" },
+        { "key": "ssd", "label": "SSD optimizations", "desc": "No last-access, no 8.3 names, TRIM" },
+        { "key": "memory_compression", "label": "Disable memory compression", "desc": "Trade RAM for CPU" },
+        { "key": "standby_memory", "label": "Standby memory task", "desc": "Flush standby RAM under 1GB free" },
+        { "key": "irpstack", "label": "IRPStackSize", "desc": "Raise for SMB throughput" }
+      ]
+    },
+    {
+      "id": "11-VisualUX", "name": "Visual / UX", "type": "groups",
+      "groups": [
+        { "key": "transparency", "label": "Disable effects", "desc": "Transparency, animations, Aero Peek" },
+        { "key": "aero_shake", "label": "Disable Aero Shake", "desc": "Stop minimize-on-shake" },
+        { "key": "start_menu", "label": "Start menu cleanup", "desc": "Recommendations, recent, All-apps layout" },
+        { "key": "desktop_icons", "label": "Hide desktop icons", "desc": "Hide all desktop shortcuts/icons" },
+        { "key": "thispc_folders", "label": "Trim This PC", "desc": "Remove 3D Objects/Music/Videos/Pictures" }
+      ]
+    },
+    {
+      "id": "12-SecurityHardening", "name": "Security Hardening", "type": "groups",
+      "groups": [
+        { "key": "smbv1", "label": "Disable SMBv1", "desc": "Remove legacy SMB1 protocol" },
+        { "key": "llmnr", "label": "Disable LLMNR", "desc": "Block local name-resolution spoofing" },
+        { "key": "utf8", "label": "UTF-8 system-wide", "desc": "Set code pages to UTF-8 (reboot)" },
+        { "key": "hyperv", "label": "Hyper-V + VM Platform", "desc": "Enable Hyper-V & VM platform (reboot)" },
+        { "key": "containers_sandbox", "label": "Containers + Sandbox", "desc": "Windows Sandbox & containers (reboot)" },
+        { "key": "wsl", "label": "WSL", "desc": "Windows Subsystem for Linux (reboot)" },
+        { "key": "dotnet", "label": ".NET 3.5 / 4.8", "desc": "Enable legacy + advanced .NET" },
+        { "key": "network_features", "label": "Telnet / TFTP / misc", "desc": "Optional network feature set" },
+        { "key": "brandless_boot", "label": "Brandless boot", "desc": "Remove boot branding/animation" },
+        { "key": "sysmon", "label": "Install Sysmon", "desc": "Sysinternals Sysmon logging" },
+        { "key": "reserved_storage", "label": "Disable reserved storage", "desc": "Reclaim ~7GB reserved partition" }
+      ]
+    },
+    {
+      "id": "13-BrowserExtensions", "name": "Browser Extensions", "type": "groups",
+      "groups": [
+        { "key": "firefox", "label": "Firefox extensions", "desc": "22 extensions via policies.json" },
+        { "key": "chromium", "label": "Chrome/Edge extensions", "desc": "10 extensions via force-install policy" }
+      ]
+    },
+    {
+      "id": "14-DevTools", "name": "Developer Tools", "type": "groups",
+      "groups": [
+        { "key": "node_cli", "label": "Node & CLI", "desc": "Node, npm, GitHub CLI, nvm, Deno, Bun" },
+        { "key": "hack_tools", "label": "Security tools", "desc": "Nmap, Wireshark, Ghidra, x64dbg, jq, ripgrep…" },
+        { "key": "java", "label": "Java toolchain", "desc": "JDK 21/17, Maven, Gradle, JBang" },
+        { "key": "openssh", "label": "OpenSSH", "desc": "OpenSSH server/client + keys" },
+        { "key": "cuda", "label": "CUDA Toolkit", "desc": "NVIDIA CUDA (reboot)" },
+        { "key": "sqlserver", "label": "SQL Server tools", "desc": "SSMS, Azure Data Studio" },
+        { "key": "openssl", "label": "OpenSSL CLI", "desc": "OpenSSL command line" },
+        { "key": "doc_processing", "label": "Document processing", "desc": "Pandoc, MiKTeX, qpdf, poppler" },
+        { "key": "android_sdk", "label": "Android SDK", "desc": "cmdline-tools, platform-tools, NDK, emulator" },
+        { "key": "python_pip", "label": "Python pip globals", "desc": "poetry, pre-commit, yt-dlp, bandit…" },
+        { "key": "rust", "label": "Rust & Cargo", "desc": "rustup + 20 cargo tools" },
+        { "key": "go", "label": "Go toolchain", "desc": "Go + 20 go tools" },
+        { "key": "infra_k8s", "label": "Infra / K8s", "desc": "Terraform, kubectl, Helm, Minikube" },
+        { "key": "containers", "label": "Container extras", "desc": "Podman, lazydocker, dive, ctop" },
+        { "key": "grpc", "label": "gRPC / Protobuf", "desc": "protoc, grpc tools, buf, grpcurl" },
+        { "key": "dev_extras", "label": "Dev extras", "desc": "Graphviz, SQLite, DB Browser, Meld" }
+      ]
+    },
+    {
+      "id": "15-PortableTools", "name": "Portable Tools", "type": "groups",
+      "groups": [
+        { "key": "bin_tools", "label": "C:\\bin CLI tools", "desc": "ripgrep, fd, bat, fzf, ffmpeg, adb, 7zip…" },
+        { "key": "apps_nirsoft", "label": "NirSoft tools", "desc": "HashMyFiles, BlueScreenView, USBDeview…" },
+        { "key": "apps_reversing", "label": "Reverse engineering", "desc": "jadx, dnSpy, ILSpy, x64dbg, HxD, DIE…" },
+        { "key": "apps_remote", "label": "Screen / remote", "desc": "scrcpy, UltraVNC" },
+        { "key": "apps_misc", "label": "Misc apps", "desc": "UPX, TFTPD64, ThrottleStop, YUMI…" }
+      ]
+    },
+    {
+      "id": "16-UnixEnvironment", "name": "Unix Environment", "type": "groups",
+      "groups": [
+        { "key": "cygwin", "label": "Cygwin", "desc": "Full POSIX environment + packages" },
+        { "key": "msys2", "label": "MSYS2", "desc": "pacman-based Unix environment" },
+        { "key": "perl", "label": "Strawberry Perl", "desc": "Perl for Windows + CPAN" },
+        { "key": "python_venv", "label": "Python venv", "desc": "Default venv at C:\\venv\\default" }
+      ]
+    },
+    {
+      "id": "17-VSCodeSetup", "name": "VS Code Setup", "type": "groups",
+      "groups": [
+        { "key": "install", "label": "Install VS Code", "desc": "Install editor if missing" },
+        { "key": "extensions", "label": "Extensions", "desc": "40+ extensions (AI, langs, tools)" },
+        { "key": "fonts", "label": "Nerd Fonts", "desc": "Install programming fonts" },
+        { "key": "terminal_theme", "label": "Terminal theme", "desc": "Oh My Posh + terminal styling" }
+      ]
+    },
+    {
+      "id": "18-FinalConfig", "name": "Final Config", "type": "groups",
+      "groups": [
+        { "key": "windows_update", "label": "Windows Update policy", "desc": "AUOptions, pin release (see [updates])" },
+        { "key": "system_restore", "label": "System Restore", "desc": "Enable + create restore point" },
+        { "key": "startup_config", "label": "Startup cleanup", "desc": "Whitelist startup apps, session restore" },
+        { "key": "system_cleanup", "label": "System cleanup", "desc": "Temp, caches, logs, DISM cleanup" },
+        { "key": "weekly_update_task", "label": "Weekly update task", "desc": "Scheduled winget upgrade (see [updates])" }
+      ]
+    }
+  ]
+}
