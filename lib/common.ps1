@@ -1783,6 +1783,41 @@ function ConvertFrom-TomlValue {
 }
 
 # ============================================================================
+# Per-Feature Toggle Helper
+# Reads the [features] section of config.toml. Keys are "Module.group", e.g.
+#   [features]
+#   "07-Privacy.telemetry" = false
+# A feature is ON unless explicitly set to false, so absent config = full run
+# (backward compatible). Used by modules to gate individual sub-sections.
+# ============================================================================
+function Test-Feature {
+    param(
+        [string]$Key,            # "ModuleName.group", e.g. "05-Performance.gamebar"
+        [bool]$Default = $true   # value when not present in config
+    )
+
+    if (-not $script:Config -or -not $script:Config.ContainsKey("features")) {
+        return $Default
+    }
+    $features = $script:Config["features"]
+    if (-not $features.ContainsKey($Key)) {
+        return $Default
+    }
+
+    $val = $features[$Key]
+    if ($val -is [bool]) { return $val }
+    switch ("$val".Trim().ToLower()) {
+        "false" { return $false }
+        "0"     { return $false }
+        "no"    { return $false }
+        "true"  { return $true }
+        "1"     { return $true }
+        "yes"   { return $true }
+        default { return $Default }
+    }
+}
+
+# ============================================================================
 # Profile Loader (reads JSON profile files from profiles/ directory)
 # ============================================================================
 
