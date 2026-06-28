@@ -10,6 +10,7 @@ Write-Section "Privacy (Comprehensive)"
 $script:BlockTelemetryHosts = $false
 
 # --- 7a. Disable Wi-Fi Sense ---
+if (Test-Feature "07-Privacy.wifi_sense") {
 Write-Log "Disabling Wi-Fi Sense..."
 $WifiSensePath = "HKLM:\SOFTWARE\Microsoft\WcmSvc\wifinetworkmanager\config"
 if (-not (Test-Path $WifiSensePath)) { New-Item -Path $WifiSensePath -Force | Out-Null }
@@ -22,8 +23,10 @@ foreach ($wk in $wifiKeys) {
     Set-ItemProperty -Path $wkPath -Name "Value" -Value 0 -Type DWord -ErrorAction SilentlyContinue
 }
 Write-RiskLog "Wi-Fi Sense disabled" "safe" "OK"
+} else { Write-Log "Skipped 07-Privacy.wifi_sense (disabled in config)" "INFO" }
 
 # --- 7b. Disable Clipboard Cloud Sync ---
+if (Test-Feature "07-Privacy.clipboard") {
 Write-Log "Disabling clipboard cloud sync..."
 $ClipPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System"
 if (-not (Test-Path $ClipPath)) { New-Item -Path $ClipPath -Force | Out-Null }
@@ -35,15 +38,19 @@ if (-not (Test-Path $ClipUser)) { New-Item -Path $ClipUser -Force | Out-Null }
 Set-ItemProperty -Path $ClipUser -Name "EnableClipboardHistory"    -Value 0 -Type DWord
 Set-ItemProperty -Path $ClipUser -Name "CloudClipboardAutomaticUpload" -Value 0 -Type DWord -ErrorAction SilentlyContinue
 Write-RiskLog "Clipboard cloud sync disabled" "safe" "OK"
+} else { Write-Log "Skipped 07-Privacy.clipboard (disabled in config)" "INFO" }
 
 # --- 7c. Disable Timeline ---
+if (Test-Feature "07-Privacy.timeline") {
 Write-Log "Disabling Timeline..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "EnableActivityFeed"    -Value 0 -Type DWord
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "PublishUserActivities" -Value 0 -Type DWord
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System" -Name "UploadUserActivities"  -Value 0 -Type DWord
 Write-RiskLog "Timeline disabled" "safe" "OK"
+} else { Write-Log "Skipped 07-Privacy.timeline (disabled in config)" "INFO" }
 
 # --- 7d. Disable SmartScreen for Apps ---
+if (Test-Feature "07-Privacy.smartscreen") {
 Write-Log "Disabling SmartScreen for apps..."
 $SmartScreenPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\System"
 Set-ItemProperty -Path $SmartScreenPath -Name "EnableSmartScreen" -Value 0 -Type DWord -ErrorAction SilentlyContinue
@@ -54,8 +61,10 @@ $AttachmentPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Atta
 if (-not (Test-Path $AttachmentPath)) { New-Item -Path $AttachmentPath -Force | Out-Null }
 Set-ItemProperty -Path $AttachmentPath -Name "SaveZoneInformation" -Value 1 -Type DWord
 Write-RiskLog "SmartScreen for apps disabled" "moderate" "OK"
+} else { Write-Log "Skipped 07-Privacy.smartscreen (disabled in config)" "INFO" }
 
 # --- 7e. Disable Delivery Optimization (P2P Updates) ---
+if (Test-Feature "07-Privacy.delivery_opt") {
 Write-Log "Disabling Delivery Optimization..."
 $DOPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\DeliveryOptimization"
 if (-not (Test-Path $DOPath)) { New-Item -Path $DOPath -Force | Out-Null }
@@ -64,10 +73,12 @@ $DOUserPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimizat
 if (-not (Test-Path $DOUserPath)) { New-Item -Path $DOUserPath -Force | Out-Null }
 Set-ItemProperty -Path $DOUserPath -Name "DODownloadMode" -Value 0 -Type DWord -ErrorAction SilentlyContinue
 Write-RiskLog "Delivery Optimization (P2P updates) disabled" "safe" "OK"
+} else { Write-Log "Skipped 07-Privacy.delivery_opt (disabled in config)" "INFO" }
 
 # ============================================================================
 # 7f. Telemetry & Diagnostics
 # ============================================================================
+if (Test-Feature "07-Privacy.telemetry") {
 Write-Log "Configuring telemetry and diagnostics..."
 
 # Disable Windows telemetry
@@ -119,10 +130,12 @@ Write-RiskLog "Steps Recorder disabled" "safe" "OK"
 # Disable Inventory Collector
 Set-ItemProperty -Path $AppCompatPath -Name "DisableInventory" -Value 1 -Type DWord
 Write-RiskLog "Inventory Collector disabled" "safe" "OK"
+} else { Write-Log "Skipped 07-Privacy.telemetry (disabled in config)" "INFO" }
 
 # ============================================================================
 # 7g. Advertising & Tracking
 # ============================================================================
+if (Test-Feature "07-Privacy.advertising") {
 Write-Log "Configuring advertising and tracking..."
 
 # Disable Advertising ID (user level)
@@ -140,10 +153,12 @@ $AdvPolicyPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AdvertisingInfo"
 if (-not (Test-Path $AdvPolicyPath)) { New-Item -Path $AdvPolicyPath -Force | Out-Null }
 Set-ItemProperty -Path $AdvPolicyPath -Name "AllowAdvertisingInfo" -Value 0 -Type DWord
 Write-RiskLog "Advertising ID disabled (machine policy)" "safe" "OK"
+} else { Write-Log "Skipped 07-Privacy.advertising (disabled in config)" "INFO" }
 
 # ============================================================================
 # 7h. Location
 # ============================================================================
+if (Test-Feature "07-Privacy.location") {
 Write-Log "Configuring location settings..."
 
 $LocationPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors"
@@ -160,10 +175,12 @@ Write-RiskLog "Location scripting disabled" "safe" "OK"
 # Disable sensor data collection
 Set-ItemProperty -Path $LocationPath -Name "DisableSensors" -Value 1 -Type DWord
 Write-RiskLog "Sensor data collection disabled" "safe" "OK"
+} else { Write-Log "Skipped 07-Privacy.location (disabled in config)" "INFO" }
 
 # ============================================================================
 # 7i. Camera & Microphone Defaults
 # ============================================================================
+if (Test-Feature "07-Privacy.camera_mic") {
 Write-Log "Configuring camera and microphone defaults..."
 
 # Set camera default to deny for apps
@@ -177,10 +194,12 @@ $MicConsentPath = "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAcc
 if (-not (Test-Path $MicConsentPath)) { New-Item -Path $MicConsentPath -Force | Out-Null }
 Set-ItemProperty -Path $MicConsentPath -Name "Value" -Value "Deny" -Type String
 Write-RiskLog "Microphone default set to Deny for apps" "moderate" "OK"
+} else { Write-Log "Skipped 07-Privacy.camera_mic (disabled in config)" "INFO" }
 
 # ============================================================================
 # 7j. Inking & Typing
 # ============================================================================
+if (Test-Feature "07-Privacy.inking") {
 Write-Log "Configuring inking and typing privacy..."
 
 # Disable "Improve inking and typing"
@@ -204,10 +223,12 @@ $HWErrPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\HandwritingErrorReports"
 if (-not (Test-Path $HWErrPath)) { New-Item -Path $HWErrPath -Force | Out-Null }
 Set-ItemProperty -Path $HWErrPath -Name "PreventHandwritingErrorReports" -Value 1 -Type DWord
 Write-RiskLog "Handwriting error reports disabled" "safe" "OK"
+} else { Write-Log "Skipped 07-Privacy.inking (disabled in config)" "INFO" }
 
 # ============================================================================
 # 7k. Tailored Experiences & Content
 # ============================================================================
+if (Test-Feature "07-Privacy.tailored") {
 Write-Log "Configuring tailored experiences and content..."
 
 # Disable tailored experiences (user level)
@@ -229,10 +250,12 @@ $CloudContentMachine = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
 if (-not (Test-Path $CloudContentMachine)) { New-Item -Path $CloudContentMachine -Force | Out-Null }
 Set-ItemProperty -Path $CloudContentMachine -Name "DisableWindowsConsumerFeatures" -Value 1 -Type DWord
 Write-RiskLog "Consumer features (tips on lock screen, app suggestions) disabled" "safe" "OK"
+} else { Write-Log "Skipped 07-Privacy.tailored (disabled in config)" "INFO" }
 
 # ============================================================================
 # 7l. Windows Error Reporting
 # ============================================================================
+if (Test-Feature "07-Privacy.wer") {
 Write-Log "Configuring Windows Error Reporting..."
 
 # Disable WER service
@@ -255,10 +278,12 @@ $WERConsentPath = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\Cons
 if (-not (Test-Path $WERConsentPath)) { New-Item -Path $WERConsentPath -Force | Out-Null }
 Set-ItemProperty -Path $WERConsentPath -Name "DefaultConsent" -Value 1 -Type DWord
 Write-RiskLog "Windows Error Reporting consent set to never send" "moderate" "OK"
+} else { Write-Log "Skipped 07-Privacy.wer (disabled in config)" "INFO" }
 
 # ============================================================================
 # 7m. Cortana & Search (reinforcement)
 # ============================================================================
+if (Test-Feature "07-Privacy.cortana_search") {
 Write-Log "Configuring Cortana and search..."
 
 $SearchPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search"
@@ -275,10 +300,12 @@ Write-RiskLog "Web search from taskbar disabled" "safe" "OK"
 # Disable Connected Search
 Set-ItemProperty -Path $SearchPath -Name "ConnectedSearchUseWeb" -Value 0 -Type DWord
 Write-RiskLog "Connected Search disabled" "safe" "OK"
+} else { Write-Log "Skipped 07-Privacy.cortana_search (disabled in config)" "INFO" }
 
 # ============================================================================
 # 7n. Edge / Copilot / AI Features (Windows 11 24H2+)
 # ============================================================================
+if (Test-Feature "07-Privacy.copilot_ai") {
 Write-Log "Configuring Copilot and AI features..."
 
 # Disable Windows Copilot (user level)
@@ -298,10 +325,12 @@ $CopilotMachine = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsCopilot"
 if (-not (Test-Path $CopilotMachine)) { New-Item -Path $CopilotMachine -Force | Out-Null }
 Set-ItemProperty -Path $CopilotMachine -Name "TurnOffWindowsCopilot" -Value 1 -Type DWord
 Write-RiskLog "Windows Copilot disabled (machine policy)" "safe" "OK"
+} else { Write-Log "Skipped 07-Privacy.copilot_ai (disabled in config)" "INFO" }
 
 # ============================================================================
 # 7o. Feedback
 # ============================================================================
+if (Test-Feature "07-Privacy.feedback") {
 Write-Log "Configuring feedback settings..."
 
 $FeedbackPath = "HKCU:\Software\Microsoft\Siuf\Rules"
@@ -314,6 +343,7 @@ Write-RiskLog "Feedback notifications disabled" "safe" "OK"
 # Disable feedback frequency
 Set-ItemProperty -Path $FeedbackPath -Name "PeriodInNanoSeconds" -Value 0 -Type DWord
 Write-RiskLog "Feedback frequency set to never" "safe" "OK"
+} else { Write-Log "Skipped 07-Privacy.feedback (disabled in config)" "INFO" }
 
 # ============================================================================
 # 7p. Optional: Telemetry Hosts Blocking
@@ -384,6 +414,8 @@ function Block-TelemetryHosts {
 }
 
 # Execute the hosts blocking function (respects $script:BlockTelemetryHosts flag)
+if (Test-Feature "07-Privacy.telemetry_hosts" $false) {
 Block-TelemetryHosts
+} else { Write-Log "Skipped 07-Privacy.telemetry_hosts (disabled in config)" "INFO" }
 
 Write-Log "Module 07-Privacy completed" "OK"

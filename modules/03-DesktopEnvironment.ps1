@@ -7,8 +7,9 @@ $ProgressPreference = 'SilentlyContinue'
 $WarningPreference = 'SilentlyContinue'
 
 # --- 3a. Dark Mode (System + Apps + Legacy Win32) ---
-Write-Log "Enabling system-wide dark mode (including legacy apps)..."
 $ThemePath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
+if (Test-Feature "03-DesktopEnvironment.darkmode") {
+Write-Log "Enabling system-wide dark mode (including legacy apps)..."
 Set-ItemProperty -Path $ThemePath -Name "AppsUseLightTheme"    -Value 0 -Type DWord
 Set-ItemProperty -Path $ThemePath -Name "SystemUsesLightTheme" -Value 0 -Type DWord
 
@@ -52,8 +53,10 @@ Set-ItemProperty -Path $ColorsPath -Name "ActiveBorder" -Value "50 50 55" -Type 
 Set-ItemProperty -Path $ColorsPath -Name "InactiveBorder" -Value "40 40 43" -Type String -ErrorAction SilentlyContinue
 
 Write-Log "Dark mode enabled (system + apps + legacy Win32 + dark colors)" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.darkmode (disabled in config)" "INFO" }
 
 # --- 3b. Wallpaper - Dark Graphite ---
+if (Test-Feature "03-DesktopEnvironment.wallpaper") {
 Write-Log "Setting wallpaper to dark graphite..."
 # Create a 1x1 dark graphite BMP to use as wallpaper
 $wallpaperDir  = Join-Path $env:APPDATA "WinInit"
@@ -88,8 +91,10 @@ public class Wallpaper {
 "@
 [Wallpaper]::Set($wallpaperPath)
 Write-Log "Wallpaper set to dark graphite" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.wallpaper (disabled in config)" "INFO" }
 
 # --- 3c. Accent Color - Slate ---
+if (Test-Feature "03-DesktopEnvironment.accent") {
 Write-Log "Setting accent color to slate..."
 $DWMPath = "HKCU:\Software\Microsoft\Windows\DWM"
 # Slate accent: ABGR format - Slate grey (#708090 RGB = 0xFF908070 ABGR)
@@ -124,8 +129,10 @@ Set-ItemProperty -Path $AccentPalette -Name "AccentPalette" -Value $slatepalette
 Set-ItemProperty -Path $AccentPalette -Name "AccentColorMenu" -Value 0xFF908070 -Type DWord -ErrorAction SilentlyContinue
 Set-ItemProperty -Path $AccentPalette -Name "StartColorMenu" -Value 0xFF5F4735 -Type DWord -ErrorAction SilentlyContinue
 Write-Log "Accent color set to slate" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.accent (disabled in config)" "INFO" }
 
 # --- 3d. Taskbar Customization ---
+if (Test-Feature "03-DesktopEnvironment.taskbar") {
 Write-Log "Customizing taskbar..."
 $TaskbarPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
 # Small taskbar icons (Windows 10) / compact mode
@@ -236,8 +243,10 @@ Set-ItemProperty -Path $TaskbarPath -Name "TaskbarAl" -Value 1 -Type DWord -Erro
 # Hide Copilot button
 Set-ItemProperty -Path $TaskbarPath -Name "ShowCopilotButton" -Value 0 -Type DWord -ErrorAction SilentlyContinue
 Write-Log "Taskbar customized (search/widgets/chat/copilot all hidden)" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.taskbar (disabled in config)" "INFO" }
 
 # --- 3d2. Unpin Default Apps & Pin Custom Apps to Taskbar ---
+if (Test-Feature "03-DesktopEnvironment.taskbar_pins") {
 Write-Log "Configuring taskbar pins..."
 
 # Unpin Edge, Store, Mail, and other default-pinned junk
@@ -322,8 +331,10 @@ $StartLayoutPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Start"
 Set-ItemProperty -Path $StartLayoutPath -Name "ShowRecentList"    -Value 0 -Type DWord -ErrorAction SilentlyContinue
 Set-ItemProperty -Path $StartLayoutPath -Name "ShowFrequentList"  -Value 0 -Type DWord -ErrorAction SilentlyContinue
 Write-Log "Taskbar pins configured" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.taskbar_pins (disabled in config)" "INFO" }
 
 # --- 3e. File Explorer Settings ---
+if (Test-Feature "03-DesktopEnvironment.explorer") {
 Write-Log "Customizing File Explorer..."
 $ExplorerPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
 # Show file extensions
@@ -360,8 +371,10 @@ if (Test-Path $customDestinations) {
     Remove-Item "$customDestinations\*" -Force -ErrorAction SilentlyContinue
 }
 Write-Log "File Explorer: no recent files, no frequent folders, opens to This PC" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.explorer (disabled in config)" "INFO" }
 
 # --- 3f. Context Menu - Restore Classic (Win 11) ---
+if (Test-Feature "03-DesktopEnvironment.context_menu") {
 Write-Log "Restoring classic right-click context menu..."
 $ContextMenuKey = "HKCU:\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32"
 if (-not (Test-Path $ContextMenuKey)) {
@@ -385,15 +398,19 @@ foreach ($key in $wmKeys) {
     reg delete $key /f >$null 2>&1
 }
 Write-Log "WinMerge removed from context menu" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.context_menu (disabled in config)" "INFO" }
 
 # --- 3g. Mouse & Cursor ---
+if (Test-Feature "03-DesktopEnvironment.mouse") {
 Write-Log "Disabling mouse acceleration..."
 Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseSpeed"      -Value "0"
 Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseThreshold1" -Value "0"
 Set-ItemProperty -Path "HKCU:\Control Panel\Mouse" -Name "MouseThreshold2" -Value "0"
 Write-Log "Mouse acceleration disabled" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.mouse (disabled in config)" "INFO" }
 
 # --- 3h. Disable Windows Search Service ---
+if (Test-Feature "03-DesktopEnvironment.search_service") {
 Write-Log "Disabling Windows Search service and indexing..."
 # Stop and disable the WSearch service
 Stop-Service -Name "WSearch" -Force -ErrorAction SilentlyContinue
@@ -440,15 +457,19 @@ Set-ItemProperty -Path $SearchIdxPolicy -Name "PreventIndexOnBattery" -Value 1 -
 Set-ItemProperty -Path $SearchIdxPolicy -Name "DisableBackoff" -Value 1 -Type DWord
 # Note: "Everything" app replaces Windows Search with superior performance
 Write-Log "Windows Search service disabled (use Everything app instead)" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.search_service (disabled in config)" "INFO" }
 
 # --- 3i. Power Settings (prevent sleep on AC) ---
+if (Test-Feature "03-DesktopEnvironment.power") {
 Write-Log "Setting power plan: never sleep on AC..."
 powercfg /change standby-timeout-ac 0 >$null 2>&1
 powercfg /change monitor-timeout-ac 15 >$null 2>&1
 powercfg /change hibernate-timeout-ac 0 >$null 2>&1
 Write-Log "Power settings configured" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.power (disabled in config)" "INFO" }
 
 # --- 3i. Disable Lock Screen Ads & Tips ---
+if (Test-Feature "03-DesktopEnvironment.lockscreen_ads") {
 Write-Log "Disabling tips, ads, and suggestions..."
 $ContentDelivery = "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
 $cdKeys = @(
@@ -465,15 +486,19 @@ foreach ($key in $cdKeys) {
     Set-ItemProperty -Path $ContentDelivery -Name $key -Value 0 -Type DWord -ErrorAction SilentlyContinue
 }
 Write-Log "Tips, ads, and suggestions disabled" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.lockscreen_ads (disabled in config)" "INFO" }
 
 # --- 3j. Disable Startup Delay ---
+if (Test-Feature "03-DesktopEnvironment.startup_delay") {
 Write-Log "Disabling startup app delay..."
 $SerializePath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Serialize"
 if (-not (Test-Path $SerializePath)) { New-Item -Path $SerializePath -Force | Out-Null }
 Set-ItemProperty -Path $SerializePath -Name "StartupDelayInMSec" -Value 0 -Type DWord
 Write-Log "Startup delay disabled" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.startup_delay (disabled in config)" "INFO" }
 
 # --- 3k. Privacy - FULL Telemetry Annihilation ---
+if (Test-Feature "03-DesktopEnvironment.telemetry") {
 Write-Log "Nuking telemetry, diagnostics, and tracking..."
 
 # -- Activity History --
@@ -872,10 +897,12 @@ if (Test-Path $deviceCensus) {
 }
 
 Write-Log "Telemetry annihilation complete" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.telemetry (disabled in config)" "INFO" }
 
 # ============================================================================
 # Microsoft Account Nag / Login Prompts - Full Removal
 # ============================================================================
+if (Test-Feature "03-DesktopEnvironment.msaccount_nag") {
 Write-Log "Removing Microsoft Account nags, Defender nags, and Office nags..."
 
 # --- Disable "Finish setting up your device" / "Let's finish setting up" ---
@@ -980,10 +1007,12 @@ Set-ItemProperty -Path $SettingsVis -Name "SettingsPageVisibility" -Value "hide:
 Write-Log "Hidden sync/backup/find-my-device/insider from Settings" "OK"
 
 Write-Log "Microsoft Account / Defender / Office nag removal complete" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.msaccount_nag (disabled in config)" "INFO" }
 
 # ============================================================================
 # FULL DECLOUDIFICATION & DECRAPPIFICATION
 # ============================================================================
+if (Test-Feature "03-DesktopEnvironment.decloud") {
 Write-Log "Starting full decloudification..."
 
 # --- Fully remove Widgets (not just hide - kill the package) ---
@@ -1247,10 +1276,12 @@ Set-Service -Name "CDPUserSvc" -StartupType Disabled -ErrorAction SilentlyContin
 Write-Log "Phone Link and cross-device features removed" "OK"
 
 Write-Log "Full decloudification complete" "OK"
+} else { Write-Log "Skipped 03-DesktopEnvironment.decloud (disabled in config)" "INFO" }
 
 # ============================================================================
 # Tips, Suggestions, Jump Lists, First Run, Drive Labels
 # ============================================================================
+if (Test-Feature "03-DesktopEnvironment.tips_dpi_lockscreen") {
 
 # --- Disable ALL tips and suggestions everywhere ---
 Write-Log "Disabling all tips and suggestions..."
@@ -1421,5 +1452,6 @@ if ($secDrive) {
 } else {
     Write-Log "No D: drive found - skipping label" "WARN"
 }
+} else { Write-Log "Skipped 03-DesktopEnvironment.tips_dpi_lockscreen (disabled in config)" "INFO" }
 
 Write-Log "Section 3: Desktop Environment completed" "OK"

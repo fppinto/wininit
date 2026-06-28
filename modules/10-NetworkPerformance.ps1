@@ -4,6 +4,7 @@
 Write-Section "Network & Performance Tuning"
 
 # --- 10a. Disable Nagle Algorithm (lower latency) ---
+if (Test-Feature "10-NetworkPerformance.nagle") {
 Write-Log "Disabling Nagle algorithm on all interfaces..."
 $netInterfaces = Get-ChildItem "HKLM:\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters\Interfaces"
 foreach ($iface in $netInterfaces) {
@@ -12,14 +13,18 @@ foreach ($iface in $netInterfaces) {
     Set-ItemProperty -Path $iface.PSPath -Name "TcpDelAckTicks"  -Value 0 -Type DWord -ErrorAction SilentlyContinue
 }
 Write-Log "Nagle algorithm disabled on all network interfaces" "OK"
+} else { Write-Log "Skipped 10-NetworkPerformance.nagle (disabled in config)" "INFO" }
 
 # --- 10b. Disable Paging Executive (keep kernel in RAM) ---
+if (Test-Feature "10-NetworkPerformance.paging_executive") {
 Write-Log "Disabling paging executive (keep kernel in RAM)..."
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" `
     -Name "DisablePagingExecutive" -Value 1 -Type DWord
 Write-Log "Paging executive disabled - kernel stays in RAM" "OK"
+} else { Write-Log "Skipped 10-NetworkPerformance.paging_executive (disabled in config)" "INFO" }
 
 # --- 10c. SSD Optimizations ---
+if (Test-Feature "10-NetworkPerformance.ssd") {
 Write-Log "Applying SSD optimizations..."
 # Disable last access timestamp updates (reduces write overhead)
 fsutil behavior set disablelastaccess 1 >$null 2>&1
@@ -28,13 +33,17 @@ fsutil behavior set disable8dot3 1 >$null 2>&1
 # Ensure TRIM is enabled
 fsutil behavior set disabledeletenotify 0 >$null 2>&1
 Write-Log "SSD optimizations applied (last access off, 8.3 names off, TRIM on)" "OK"
+} else { Write-Log "Skipped 10-NetworkPerformance.ssd (disabled in config)" "INFO" }
 
 # --- 10d. Disable Memory Compression ---
+if (Test-Feature "10-NetworkPerformance.memory_compression") {
 Write-Log "Disabling memory compression..."
 Disable-MMAgent -MemoryCompression -ErrorAction SilentlyContinue 3>$null | Out-Null
 Write-Log "Memory compression disabled (saves CPU, use if 16GB+ RAM)" "OK"
+} else { Write-Log "Skipped 10-NetworkPerformance.memory_compression (disabled in config)" "INFO" }
 
 # --- 10e. Clear Standby Memory on Threshold ---
+if (Test-Feature "10-NetworkPerformance.standby_memory") {
 Write-Log "Configuring standby memory clearing..."
 # Set large system cache to let the OS manage standby more aggressively
 $MemMgmtPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management"
@@ -59,12 +68,15 @@ Register-ScheduledTask -TaskName "WinInit-ClearStandbyMemory" `
     -Description "Clears standby memory when free RAM drops below 1GB" `
     -Force -ErrorAction SilentlyContinue 3>$null | Out-Null
 Write-Log "Standby memory clearing task registered (runs every 10 min)" "OK"
+} else { Write-Log "Skipped 10-NetworkPerformance.standby_memory (disabled in config)" "INFO" }
 
 # --- 10f. Increase IRPStackSize (network throughput) ---
+if (Test-Feature "10-NetworkPerformance.irpstack") {
 Write-Log "Increasing IRPStackSize..."
 $TcpipParams = "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters"
 Set-ItemProperty -Path $TcpipParams -Name "IRPStackSize" -Value 32 -Type DWord
 Write-Log "IRPStackSize set to 32 (improved network throughput)" "OK"
+} else { Write-Log "Skipped 10-NetworkPerformance.irpstack (disabled in config)" "INFO" }
 
 Write-Log "Module 10-NetworkPerformance completed" "OK"
 

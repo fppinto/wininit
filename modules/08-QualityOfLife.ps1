@@ -4,14 +4,17 @@
 Write-Section "Quality of Life"
 
 # --- 8a. NumLock ON at Boot ---
+if (Test-Feature "08-QualityOfLife.numlock") {
 Write-Log "Enabling NumLock at boot..."
 $NumLockPath = "Registry::HKEY_USERS\.DEFAULT\Control Panel\Keyboard"
 Set-ItemProperty -Path $NumLockPath -Name "InitialKeyboardIndicators" -Value "2147483650" -Type String
 # Also for current user
 Set-ItemProperty -Path "HKCU:\Control Panel\Keyboard" -Name "InitialKeyboardIndicators" -Value "2147483650" -Type String
 Write-Log "NumLock enabled at boot" "OK"
+} else { Write-Log "Skipped 08-QualityOfLife.numlock (disabled in config)" "INFO" }
 
 # --- 8b. Disable Sticky Keys & Filter Keys Completely ---
+if (Test-Feature "08-QualityOfLife.sticky_keys") {
 Write-Log "Disabling Sticky Keys, Filter Keys, and Toggle Keys..."
 # Sticky Keys - disable the shortcut and the feature
 $StickyPath = "HKCU:\Control Panel\Accessibility\StickyKeys"
@@ -25,8 +28,10 @@ Set-ItemProperty -Path $TogglePath -Name "Flags" -Value "58" -Type String    # 5
 # Prevent the "Do you want to turn on Sticky Keys?" prompt entirely
 Set-ItemProperty -Path $StickyPath -Name "HotkeyFlags" -Value "0" -Type String -ErrorAction SilentlyContinue
 Write-Log "Sticky Keys, Filter Keys, and Toggle Keys fully disabled" "OK"
+} else { Write-Log "Skipped 08-QualityOfLife.sticky_keys (disabled in config)" "INFO" }
 
 # --- 8c. Set Default Terminal to Windows Terminal (PowerShell 7) ---
+if (Test-Feature "08-QualityOfLife.default_terminal") {
 Write-Log "Setting default terminal to Windows Terminal..."
 # Win 11 default terminal setting
 $ConsolePath = "HKCU:\Console\%%Startup"
@@ -86,8 +91,10 @@ try {
     Write-Log "Windows Terminal settings config failed: $_ (will be fixed in module 17)" "WARN"
 }
 Write-Log "Default terminal set to Windows Terminal" "OK"
+} else { Write-Log "Skipped 08-QualityOfLife.default_terminal (disabled in config)" "INFO" }
 
 # --- Make "Open in Terminal" always visible (no Shift needed) ---
+if (Test-Feature "08-QualityOfLife.terminal_context") {
 Write-Log "Making 'Open in Terminal' always available without Shift..."
 # Directory background context menu
 $openTermBg = "HKLM:\SOFTWARE\Classes\Directory\Background\shell\OpenInTerminal"
@@ -111,8 +118,10 @@ foreach ($termKey in @($openTermBg, $openTermDir, $openTermLib)) {
     }
 }
 Write-Log "'Open in Terminal' always visible in context menu (no Shift required)" "OK"
+} else { Write-Log "Skipped 08-QualityOfLife.terminal_context (disabled in config)" "INFO" }
 
 # --- 8d. Set EVERYTHING to en-US ---
+if (Test-Feature "08-QualityOfLife.locale") {
 Write-Log "Setting all locales globally to en-US..."
 
 # --- Language Pack ---
@@ -257,8 +266,10 @@ git config --global i18n.logoutputencoding utf-8 >$null 2>&1
 git config --global i18n.commitencoding utf-8 >$null 2>&1
 
 Write-Log "All locales globally set to en-US" "OK"
+} else { Write-Log "Skipped 08-QualityOfLife.locale (disabled in config)" "INFO" }
 
 # --- 8e. Enable Long Path Support (remove 260 char limit) ---
+if (Test-Feature "08-QualityOfLife.long_paths") {
 Write-Log "Enabling long path support..."
 Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1 -Type DWord
 # Also enable via group policy path
@@ -268,8 +279,10 @@ Set-ItemProperty -Path $LongPathPolicy -Name "LongPathsEnabled" -Value 1 -Type D
 # Enable for Git as well
 git config --global core.longpaths true >$null 2>&1
 Write-Log "Long path support enabled (260 char limit removed)" "OK"
+} else { Write-Log "Skipped 08-QualityOfLife.long_paths (disabled in config)" "INFO" }
 
 # --- 8f. Set PowerShell Execution Policy to Unrestricted ---
+if (Test-Feature "08-QualityOfLife.exec_policy") {
 Write-Log "Setting PowerShell execution policy..."
 try { Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope LocalMachine -Force -ErrorAction Stop } catch { Write-Log "ExecutionPolicy LocalMachine: $_" "WARN" }
 try { Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser  -Force -ErrorAction Stop } catch { Write-Log "ExecutionPolicy CurrentUser: $_" "WARN" }
@@ -280,5 +293,6 @@ if (-not (Test-Path $PSPolicyPath)) { New-Item -Path $PSPolicyPath -Force | Out-
 Set-ItemProperty -Path $PSPolicyPath -Name "EnableScripts" -Value 1 -Type DWord
 Set-ItemProperty -Path $PSPolicyPath -Name "ExecutionPolicy" -Value "Unrestricted" -Type String
 Write-Log "PowerShell execution policy set to Unrestricted (all scopes)" "OK"
+} else { Write-Log "Skipped 08-QualityOfLife.exec_policy (disabled in config)" "INFO" }
 
 Write-Log "Module 08-QualityOfLife completed" "OK"

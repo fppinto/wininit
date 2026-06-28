@@ -4,6 +4,7 @@
 Write-Section "Visual / UX Tweaks"
 
 # --- 11a. Disable Transparency / Glass / Blur Effects ---
+if (Test-Feature "11-VisualUX.transparency") {
 Write-Log "Disabling all transparency, glass, and blur effects..."
 $themePers = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"
 Set-ItemProperty -Path $themePers -Name "EnableTransparency" -Value 0 -Type DWord
@@ -22,8 +23,10 @@ Set-ItemProperty -Path $desktopPath -Name "FontSmoothing"     -Value "2" -Type S
 $desktopWM = "HKCU:\Control Panel\Desktop\WindowMetrics"
 Set-ItemProperty -Path $desktopWM -Name "MinAnimate" -Value "0" -Type String -ErrorAction SilentlyContinue
 Write-Log "Transparency, glass, blur, and animations disabled" "OK"
+} else { Write-Log "Skipped 11-VisualUX.transparency (disabled in config)" "INFO" }
 
 # --- 11a2. Disable Aero Shake ---
+if (Test-Feature "11-VisualUX.aero_shake") {
 Write-Log "Disabling Aero Shake (minimize all by shaking)..."
 $ShakePath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
 Set-ItemProperty -Path $ShakePath -Name "DisallowShaking" -Value 1 -Type DWord
@@ -32,8 +35,10 @@ $ShakePolicyPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer"
 if (-not (Test-Path $ShakePolicyPath)) { New-Item -Path $ShakePolicyPath -Force | Out-Null }
 Set-ItemProperty -Path $ShakePolicyPath -Name "NoWindowMinimizingShortcuts" -Value 1 -Type DWord
 Write-Log "Aero Shake disabled" "OK"
+} else { Write-Log "Skipped 11-VisualUX.aero_shake (disabled in config)" "INFO" }
 
 # --- 11b. Disable Start Menu Recommendations & Categories ---
+if (Test-Feature "11-VisualUX.start_menu") {
 Write-Log "Disabling Start Menu recommendations and categories..."
 $StartPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
 # Disable "Show recommendations" in Start
@@ -84,8 +89,10 @@ Set-ItemProperty -Path $StartPath -Name "VisiblePlaces" -Value ([byte[]]@(
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Start" /v "ShowAllApps" /t REG_DWORD /d 0 /f >$null 2>&1
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_Layout" /t REG_DWORD /d 1 /f >$null 2>&1
 Write-Log "Start Menu: pins only, all apps/recommendations/groups hidden" "OK"
+} else { Write-Log "Skipped 11-VisualUX.start_menu (disabled in config)" "INFO" }
 
 # --- 11c. Hide ALL Desktop Icons ---
+if (Test-Feature "11-VisualUX.desktop_icons") {
 Write-Log "Hiding all desktop icons..."
 $DesktopIconPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced"
 Set-ItemProperty -Path $DesktopIconPath -Name "HideIcons" -Value 1 -Type DWord
@@ -103,8 +110,10 @@ Set-ItemProperty -Path $NewStartPanel -Name "{59031a47-3f72-44a7-89c5-5595fe6b30
 # Control Panel
 Set-ItemProperty -Path $NewStartPanel -Name "{5399E694-6CE5-4D6C-8FCE-1D8870FDCBA0}" -Value 1 -Type DWord
 Write-Log "All desktop icons hidden" "OK"
+} else { Write-Log "Skipped 11-VisualUX.desktop_icons (disabled in config)" "INFO" }
 
 # --- 11d. Remove 3D Objects, Music, Videos, Pictures from This PC Sidebar ---
+if (Test-Feature "11-VisualUX.thispc_folders") {
 Write-Log "Removing 3D Objects, Music, Videos, Pictures from This PC sidebar..."
 $thisPcFolders = @(
     @{
@@ -177,5 +186,6 @@ foreach ($folder in $thisPcFolders) {
     }
 }
 Write-Log "3D Objects, Music, Videos, Pictures removed from This PC sidebar" "OK"
+} else { Write-Log "Skipped 11-VisualUX.thispc_folders (disabled in config)" "INFO" }
 
 Write-Log "Module 11-VisualUX completed" "OK"

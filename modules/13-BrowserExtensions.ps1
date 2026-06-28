@@ -6,6 +6,7 @@ Write-Section "Browser Extensions" "Firefox policies + Chromium force-install"
 # ============================================================================
 # Firefox Extensions (via policies.json)
 # ============================================================================
+if (Test-Feature "13-BrowserExtensions.firefox") {
 Write-Log "Configuring Firefox extension auto-install via policies..."
 
 # Find Firefox installation directory
@@ -108,10 +109,12 @@ $policiesJson = $policies | ConvertTo-Json -Depth 10
 Set-Content -Path (Join-Path $ffDistDir "policies.json") -Value $policiesJson -Encoding UTF8
 Write-Log "Firefox policies.json written with $($firefoxExtensions.Count) extensions" "OK"
 Write-Log "Extensions will auto-install on next Firefox launch" "OK"
+} else { Write-Log "Skipped 13-BrowserExtensions.firefox (disabled in config)" "INFO" }
 
 # ============================================================================
 # Chrome / Edge / Chromium Extensions (via registry force-install)
 # ============================================================================
+if (Test-Feature "13-BrowserExtensions.chromium") {
 Write-Log "Configuring Chromium browser extensions..."
 
 # Chromium-based browsers support force-install via registry ExtensionInstallForcelist
@@ -185,6 +188,7 @@ Set-ItemProperty -Path $EdgeAllowedStores -Name "1" -Value "https://clients2.goo
 Set-ItemProperty -Path $EdgeAllowedStores -Name "2" -Value "https://chrome.google.com/webstore/*" -Type String
 
 Write-Log "Chromium browser extensions configured (all 3 browsers)" "OK"
+} else { Write-Log "Skipped 13-BrowserExtensions.chromium (disabled in config)" "INFO" }
 
 Write-Log "Module 13 - Browser Extensions completed" "OK"
 

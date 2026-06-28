@@ -7,7 +7,7 @@ Write-Section "VS Code Setup" "Extensions, fonts, settings, terminal theme, cont
 # VS Code Extensions
 # ============================================================================
 
-# Check if code CLI is available
+# Check if code CLI is available (detection kept OUTSIDE guards: feeds extensions loop)
 $codePath = Get-Command code -ErrorAction SilentlyContinue
 if (-not $codePath) {
     # Try common install paths
@@ -15,6 +15,23 @@ if (-not $codePath) {
     if (Test-Path $codeExe) { $codePath = $codeExe }
 }
 
+# --- Install VS Code (if missing) ---
+if (Test-Feature "17-VSCodeSetup.install") {
+    if (-not $codePath) {
+        Write-Log "Installing VS Code..."
+        Install-App "Visual Studio Code" -WingetId "Microsoft.VisualStudioCode" -ChocoId "vscode"
+        # Re-detect after install so the extensions section can use it
+        $codePath = Get-Command code -ErrorAction SilentlyContinue
+        if (-not $codePath) {
+            $codeExe = "$env:LOCALAPPDATA\Programs\Microsoft VS Code\bin\code.cmd"
+            if (Test-Path $codeExe) { $codePath = $codeExe }
+        }
+    } else {
+        Write-Log "VS Code already installed" "OK"
+    }
+} else { Write-Log "Skipped 17-VSCodeSetup.install (disabled in config)" "INFO" }
+
+if (Test-Feature "17-VSCodeSetup.extensions") {
 if ($codePath) {
     $vscodeExtensions = @(
         # AI / Assistants
@@ -99,10 +116,12 @@ if ($codePath) {
 } else {
     Write-Log "VS Code CLI not found - skipping extension install (install VS Code first)" "WARN"
 }
+} else { Write-Log "Skipped 17-VSCodeSetup.extensions (disabled in config)" "INFO" }
 
 # ============================================================================
 # Install Fira Code Font
 # ============================================================================
+if (Test-Feature "17-VSCodeSetup.fonts") {
 Write-SubStep "Fira Code Font"
 
 # Check if Fira Code NF is already installed
@@ -144,6 +163,7 @@ try {
     Write-Log "Failed to install Fira Code: $_" "ERROR"
 }
 } # end Fira Code check
+} else { Write-Log "Skipped 17-VSCodeSetup.fonts (disabled in config)" "INFO" }
 
 # ============================================================================
 # VS Code Settings
@@ -209,6 +229,7 @@ Write-Log "VS Code settings configured (theme, font, autosave, telemetry off)" "
 # ============================================================================
 # Windows Terminal Theme
 # ============================================================================
+if (Test-Feature "17-VSCodeSetup.terminal_theme") {
 Write-SubStep "Windows Terminal Theme"
 
 # Load existing settings safely (handles comments, BOM, corruption)
@@ -354,6 +375,7 @@ $wtConfig | Add-Member -NotePropertyName "themes" -NotePropertyValue $existingTh
 
 Write-WTSettings -Config $wtConfig | Out-Null
 Write-Log "Windows Terminal themed (OLED dark, Fira Code NF, acrylic, custom color scheme)" "OK"
+} else { Write-Log "Skipped 17-VSCodeSetup.terminal_theme (disabled in config)" "INFO" }
 
 # ============================================================================
 # Context Menu: Open VS Code Here
@@ -384,6 +406,7 @@ Write-Log "VS Code context menu entries added (files, folders, background)" "OK"
 # ============================================================================
 # Oh My Posh + PowerShell Profile
 # ============================================================================
+if (Test-Feature "17-VSCodeSetup.terminal_theme") {
 Write-Log "Setting up Oh My Posh & PowerShell profile..."
 
 # Install Oh My Posh
@@ -488,6 +511,7 @@ if (Test-Path $psProfile) {
 }
 
 Write-Log "Oh My Posh + profile configured" "OK"
+} else { Write-Log "Skipped 17-VSCodeSetup.terminal_theme (disabled in config)" "INFO" }
 
 # ============================================================================
 # File Associations

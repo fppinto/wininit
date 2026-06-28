@@ -29,6 +29,7 @@ if ($odAlreadyGone) {
     return
 }
 
+if (Test-Feature "04-OneDriveRemoval.uninstall") {
 # -- Kill OneDrive processes --
 Write-Log "Killing OneDrive processes..."
 $odProcs = Get-Process -Name "OneDrive", "OneDriveSetup", "FileCoAuth" -ErrorAction SilentlyContinue
@@ -69,7 +70,9 @@ if ($odNeedsUninstall) {
 } else {
     Write-Log "OneDrive already uninstalled (no setup exe found)" "OK"
 }
+} else { Write-Log "Skipped 04-OneDriveRemoval.uninstall (disabled in config)" "INFO" }
 
+if (Test-Feature "04-OneDriveRemoval.cleanup") {
 # -- Remove OneDrive leftover directories --
 Write-Log "Removing OneDrive leftover folders..."
 $odFolders = @(
@@ -85,13 +88,17 @@ foreach ($folder in $odFolders) {
         Write-Log "Removed: $folder" "OK"
     }
 }
+} else { Write-Log "Skipped 04-OneDriveRemoval.cleanup (disabled in config)" "INFO" }
 
+if (Test-Feature "04-OneDriveRemoval.explorer_integration") {
 # -- Remove OneDrive from Explorer sidebar --
 Write-Log "Removing OneDrive from Explorer navigation pane..."
 # Use reg.exe directly (HKCR via PowerShell PSDrive is extremely slow)
 reg add "HKCR\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" /v "System.IsPinnedToNameSpaceTree" /t REG_DWORD /d 0 /f >$null 2>&1
 reg add "HKCR\Wow6432Node\CLSID\{018D5C66-4533-4307-9B53-224DE2ED1FE6}" /v "System.IsPinnedToNameSpaceTree" /t REG_DWORD /d 0 /f >$null 2>&1
+} else { Write-Log "Skipped 04-OneDriveRemoval.explorer_integration (disabled in config)" "INFO" }
 
+if (Test-Feature "04-OneDriveRemoval.prevent_reinstall") {
 # -- Prevent OneDrive from reinstalling --
 Write-Log "Preventing OneDrive reinstallation..."
 $odPolicyPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\OneDrive"
@@ -104,14 +111,18 @@ Set-ItemProperty -Path $odPolicyPath -Name "DisableLibrariesDefaultSaveToOneDriv
 # -- Remove OneDrive from startup --
 Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "OneDrive" -ErrorAction SilentlyContinue
 Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" -Name "OneDriveSetup" -ErrorAction SilentlyContinue
+} else { Write-Log "Skipped 04-OneDriveRemoval.prevent_reinstall (disabled in config)" "INFO" }
 
+if (Test-Feature "04-OneDriveRemoval.cleanup") {
 # -- Remove OneDrive scheduled tasks --
 $odTasks = Get-ScheduledTask -ErrorAction SilentlyContinue | Where-Object { $_.TaskName -match "OneDrive" }
 foreach ($t in $odTasks) {
     Unregister-ScheduledTask -TaskName $t.TaskName -Confirm:$false -ErrorAction SilentlyContinue
     Write-Log "Removed scheduled task: $($t.TaskName)" "OK"
 }
+} else { Write-Log "Skipped 04-OneDriveRemoval.cleanup (disabled in config)" "INFO" }
 
+if (Test-Feature "04-OneDriveRemoval.explorer_integration") {
 # -- Remove OneDrive from right-click context menu --
 reg delete "HKCR\*\shellex\ContextMenuHandlers\FileSyncEx" /f >$null 2>&1
 reg delete "HKCR\Directory\Background\shellex\ContextMenuHandlers\FileSyncEx" /f >$null 2>&1
@@ -157,7 +168,9 @@ foreach ($name in $overlayNames) {
     }
 }
 Write-Log "OneDrive icon overlays removed" "OK"
+} else { Write-Log "Skipped 04-OneDriveRemoval.explorer_integration (disabled in config)" "INFO" }
 
+if (Test-Feature "04-OneDriveRemoval.uninstall") {
 # -- Remove OneDrive UWP app if present --
 $odUwp = Get-AppxPackage -Name "*OneDrive*" -AllUsers -ErrorAction SilentlyContinue
 if ($odUwp) {
@@ -170,7 +183,9 @@ if ($odUwp) {
 } else {
     Write-Log "OneDrive UWP package already removed" "OK"
 }
+} else { Write-Log "Skipped 04-OneDriveRemoval.uninstall (disabled in config)" "INFO" }
 
+if (Test-Feature "04-OneDriveRemoval.cleanup") {
 # -- Remove OneDrive from notification area / system tray --
 Write-Log "Removing OneDrive from system tray..."
 $notifPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Notifications\Settings"
@@ -181,7 +196,9 @@ foreach ($key in $odNotifKeys) {
     Set-ItemProperty -Path $key.PSPath -Name "Enabled" -Value 0 -Type DWord -ErrorAction SilentlyContinue
 }
 Write-Log "OneDrive notifications disabled" "OK"
+} else { Write-Log "Skipped 04-OneDriveRemoval.cleanup (disabled in config)" "INFO" }
 
+if (Test-Feature "04-OneDriveRemoval.explorer_integration") {
 # -- Remove OneDrive file type associations --
 Write-Log "Removing OneDrive file handlers..."
 $odHandlerGuids = @(
@@ -205,7 +222,9 @@ if (Test-Path $officePlaces) {
     }
 }
 Write-Log "OneDrive removed from Office places" "OK"
+} else { Write-Log "Skipped 04-OneDriveRemoval.explorer_integration (disabled in config)" "INFO" }
 
+if (Test-Feature "04-OneDriveRemoval.cleanup") {
 # -- Remove OneDrive environment variable if set --
 $odEnvPath = [System.Environment]::GetEnvironmentVariable("OneDrive", "User")
 if ($odEnvPath) {
@@ -220,7 +239,9 @@ $odEnvConsumer = [System.Environment]::GetEnvironmentVariable("OneDriveConsumer"
 if ($odEnvConsumer) {
     [System.Environment]::SetEnvironmentVariable("OneDriveConsumer", $null, "User")
 }
+} else { Write-Log "Skipped 04-OneDriveRemoval.cleanup (disabled in config)" "INFO" }
 
+if (Test-Feature "04-OneDriveRemoval.explorer_integration") {
 # -- Remove OneDrive from Explorer "This PC" namespace --
 $odNamespaces = @(
     "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Desktop\NameSpace\{018D5C66-4533-4307-9B53-224DE2ED1FE6}",
@@ -232,7 +253,9 @@ foreach ($ns in $odNamespaces) {
         Write-Log "Removed OneDrive namespace: $ns" "OK"
     }
 }
+} else { Write-Log "Skipped 04-OneDriveRemoval.explorer_integration (disabled in config)" "INFO" }
 
+if (Test-Feature "04-OneDriveRemoval.cleanup") {
 # -- Clean OneDrive cache folders --
 $odCachePaths = @(
     "$env:LOCALAPPDATA\OneDrive",
@@ -257,6 +280,7 @@ if ($currentVis -and $currentVis -notmatch "onedrive") {
     Set-ItemProperty -Path $settingsVis -Name "SettingsPageVisibility" -Value "hide:onedrive" -Type String -ErrorAction SilentlyContinue
 }
 Write-Log "OneDrive hidden from Settings" "OK"
+} else { Write-Log "Skipped 04-OneDriveRemoval.cleanup (disabled in config)" "INFO" }
 
 # -- Verify OneDrive is gone --
 $verifyFail = @()

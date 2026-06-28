@@ -8,6 +8,7 @@ Write-Section "Unix Environment" "Cygwin, MSYS2, Perl, Python, Go, Ruby"
 # ============================================================================
 
 # --- Cygwin (full POSIX environment: sh, bash, grep, awk, sed, ssh, etc.) ---
+if (Test-Feature "16-UnixEnvironment.cygwin") {
 $cygwinRoot = "C:\cygwin64"
 $cygwinInstaller = Join-Path $env:TEMP "cygwin-setup-x86_64.exe"
 if (Test-Path "$cygwinRoot\bin\bash.exe") {
@@ -47,8 +48,10 @@ if ($machinePath -notmatch [regex]::Escape($cygwinBin)) {
 Remove-Item $cygwinInstaller -Force -ErrorAction SilentlyContinue
 Write-Log "Cygwin installed with $(($cygwinPackages -split ',').Count) packages" "OK"
 } # end Cygwin install check
+} else { Write-Log "Skipped 16-UnixEnvironment.cygwin (disabled in config)" "INFO" }
 
 # --- MSYS2 (alternative - lighter, pacman-based, better for building native Windows apps) ---
+if (Test-Feature "16-UnixEnvironment.msys2") {
 Write-Log "Installing MSYS2..."
 Install-App "MSYS2" -WingetId "MSYS2.MSYS2" -ChocoId "msys2"
 
@@ -62,6 +65,7 @@ if ((Test-Path $msys2Bin) -and ($machinePath -notmatch [regex]::Escape($msys2Bin
 }
 
 Write-Log "Linux/Unix environment ready (sh, bash, grep, awk, sed, make, gcc, etc. all in PATH)" "OK"
+} else { Write-Log "Skipped 16-UnixEnvironment.msys2 (disabled in config)" "INFO" }
 
 # ============================================================================
 # Perl, Python venv, Language Runtimes
@@ -69,11 +73,14 @@ Write-Log "Linux/Unix environment ready (sh, bash, grep, awk, sed, make, gcc, et
 Write-SubStep "Language Runtimes"
 
 # --- Strawberry Perl (full Perl for Windows with CPAN) ---
+if (Test-Feature "16-UnixEnvironment.perl") {
 Write-Log "Installing Strawberry Perl..."
 Install-App "Strawberry Perl" -WingetId "StrawberryPerl.StrawberryPerl" -ChocoId "strawberryperl"
 Write-Log "Strawberry Perl installed" "OK"
+} else { Write-Log "Skipped 16-UnixEnvironment.perl (disabled in config)" "INFO" }
 
 # --- Python venv: create a global default venv ---
+if (Test-Feature "16-UnixEnvironment.python_venv") {
 # pip upgrade + globals are handled by module 14 background job
 # Here we just create the venv structure and activation alias
 $pythonExe = Get-Command python -ErrorAction SilentlyContinue
@@ -121,6 +128,7 @@ Set-Alias -Name venv -Value Activate-Venv
 } else {
     Write-Log "Python not found - venv setup skipped" "WARN"
 }
+} else { Write-Log "Skipped 16-UnixEnvironment.python_venv (disabled in config)" "INFO" }
 
 # --- Go (useful for many security tools) ---
 Install-App "Go" -WingetId "GoLang.Go" -ChocoId "golang" -ScoopId "go"

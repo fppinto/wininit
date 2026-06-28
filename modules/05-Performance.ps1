@@ -7,6 +7,7 @@ $ProgressPreference = 'SilentlyContinue'
 $WarningPreference = 'SilentlyContinue'
 
 # --- 5a. Disable SysMain / Superfetch Completely ---
+if (Test-Feature "05-Performance.sysmain") {
 Write-Log "Disabling SysMain (Superfetch)..."
 Stop-Service -Name "SysMain" -Force -ErrorAction SilentlyContinue
 Set-Service  -Name "SysMain" -StartupType Disabled -ErrorAction SilentlyContinue
@@ -22,8 +23,10 @@ if (Test-Path $PrefetchPath) {
     Set-ItemProperty -Path $PrefetchPath -Name "EnablePrefetcher"  -Value 0 -Type DWord
 }
 Write-Log "SysMain and Prefetch fully disabled" "OK"
+} else { Write-Log "Skipped 05-Performance.sysmain (disabled in config)" "INFO" }
 
 # --- 5b. Disable Game Bar / Game DVR Completely ---
+if (Test-Feature "05-Performance.gamebar") {
 Write-Log "Disabling Game Bar and Game DVR..."
 # User-level Game Bar toggle
 $GameBarPath = "HKCU:\Software\Microsoft\GameBar"
@@ -61,13 +64,17 @@ Set-ItemProperty -Path $GameModePath -Name "AutoGameModeEnabled" -Value 0 -Type 
 Get-AppxPackage -Name "Microsoft.XboxGamingOverlay" -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue 2>$null | Out-Null
 Get-AppxPackage -Name "Microsoft.XboxGameOverlay"   -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue 2>$null | Out-Null
 Write-Log "Game Bar, Game DVR, and Game Mode fully disabled" "OK"
+} else { Write-Log "Skipped 05-Performance.gamebar (disabled in config)" "INFO" }
 
 # --- 5c. Disable Hibernation (frees disk space) ---
+if (Test-Feature "05-Performance.hibernation") {
 Write-Log "Disabling hibernation..."
 powercfg /hibernate off >$null 2>&1
 Write-Log "Hibernation disabled (hiberfil.sys freed)" "OK"
+} else { Write-Log "Skipped 05-Performance.hibernation (disabled in config)" "INFO" }
 
 # --- 5d. Disable Background Apps ---
+if (Test-Feature "05-Performance.background_apps") {
 Write-Log "Disabling background apps..."
 $BgAppsPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\BackgroundAccessApplications"
 if (-not (Test-Path $BgAppsPath)) { New-Item -Path $BgAppsPath -Force | Out-Null }
@@ -76,5 +83,6 @@ $BgAppsPolicy = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\AppPrivacy"
 if (-not (Test-Path $BgAppsPolicy)) { New-Item -Path $BgAppsPolicy -Force | Out-Null }
 Set-ItemProperty -Path $BgAppsPolicy -Name "LetAppsRunInBackground" -Value 2 -Type DWord  # 2 = Force Deny
 Write-Log "Background apps disabled" "OK"
+} else { Write-Log "Skipped 05-Performance.background_apps (disabled in config)" "INFO" }
 
 Write-Log "Section 5: Performance completed" "OK"

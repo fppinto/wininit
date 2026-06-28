@@ -12,6 +12,7 @@ Write-Section "Dev Tools" "CLI tools, WSL config, security/pentesting tools"
 $androidSdkRoot = "C:\android-sdk"
 $bgAndroidJob = $null
 $cmdlineToolsDir = Join-Path $androidSdkRoot "cmdline-tools"
+if (Test-Feature "14-DevTools.android_sdk") {
 if (-not (Test-Path "$cmdlineToolsDir\latest\bin\sdkmanager.bat")) {
     Write-Log "Background: starting Android SDK cmdline-tools download..." "INFO"
     $bgAndroidJob = Start-Job -ScriptBlock {
@@ -33,11 +34,12 @@ if (-not (Test-Path "$cmdlineToolsDir\latest\bin\sdkmanager.bat")) {
         } catch { return @{ ok = $false; error = $_.ToString() } }
     } -ArgumentList $androidSdkRoot, $cmdlineToolsDir
 }
+} else { Write-Log "Skipped 14-DevTools.android_sdk (disabled in config)" "INFO" }
 
 # --- Background: pip upgrade + install globals ---
 $bgPipJob = $null
 $pythonExe = Get-Command python -ErrorAction SilentlyContinue
-if ($pythonExe) {
+if ($pythonExe -and (Test-Feature "14-DevTools.python_pip")) {
     # Check if pip globals are already installed
     $pipCheckBg = (python -m pip list --format=columns 2>$null) -join "`n"
     $pipAllBg = @("cookiecutter", "pre-commit", "yt-dlp", "httpie", "poetry", "build", "wheel", "setuptools", "bandit")
@@ -92,6 +94,7 @@ Write-Log "Background tasks launched (SDK + pip will finish during other install
 # CLI Dev Tools (npm, GitHub Copilot CLI, Codex CLI)
 # ============================================================================
 
+if (Test-Feature "14-DevTools.node_cli") {
 # --- npm (comes with Node.js) ---
 # Check if node/npm already exist before trying to install
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +
@@ -543,6 +546,7 @@ Install-App "NVM for Windows" -WingetId "CoreyButler.NVMforWindows" -ChocoId "nv
 # --- Alternative JS/TS Runtimes ---
 Install-App "Deno"                  -WingetId "DenoLand.Deno"                  -ChocoId "deno"           -ScoopId "deno"
 Install-App "Bun"                   -WingetId "Oven-sh.Bun"                    -ChocoId "bun"            -ScoopId "bun"
+} else { Write-Log "Skipped 14-DevTools.node_cli (disabled in config)" "INFO" }
 
 # ============================================================================
 # WSL Configuration
@@ -569,6 +573,7 @@ Write-Log "WSL configured: 32GB RAM, 26 CPUs, 4GB swap, nested virt, auto memory
 # ============================================================================
 # Hacker / Security / Pentesting Tools
 # ============================================================================
+if (Test-Feature "14-DevTools.hack_tools") {
 Write-SubStep "Dev & Security Tools"
 
 # --- Network & Recon ---
@@ -668,10 +673,12 @@ Install-App "lazygit"               -WingetId "JesseDuffield.lazygit"          -
 Install-App "delta (git diff)"      -WingetId "dandavison.delta"               -ChocoId "delta"          -ScoopId "delta"
 Install-App "httpie"                -WingetId "HTTPie.HTTPie"                   -ChocoId "httpie"
 Install-App "OpenSSH"               -WingetId "Microsoft.OpenSSH.Beta"         -ChocoId "openssh"
+} else { Write-Log "Skipped 14-DevTools.hack_tools (disabled in config)" "INFO" }
 
 # ============================================================================
 # Java / JRE / JDK Tooling
 # ============================================================================
+if (Test-Feature "14-DevTools.java") {
 Write-SubStep "Java Tooling"
 
 Install-App "OpenJDK 21"            -WingetId "EclipseAdoptium.Temurin.21.JDK" -ChocoId "temurin21"
@@ -698,10 +705,12 @@ Install-App "VisualVM"              -WingetId "Oracle.VisualVM"                 
 # jabba removed - repo is archived/dead, use SDKMAN via WSL or manual JDK management
 
 Write-Log "Java tooling installed (JDK 17+21, Maven, Gradle, JBang, VisualVM)" "OK"
+} else { Write-Log "Skipped 14-DevTools.java (disabled in config)" "INFO" }
 
 # ============================================================================
 # OpenSSH - Full Configuration
 # ============================================================================
+if (Test-Feature "14-DevTools.openssh") {
 Write-SubStep "OpenSSH Configuration"
 
 Install-App "OpenSSH"               -WingetId "Microsoft.OpenSSH.Beta"         -ChocoId "openssh"
@@ -756,10 +765,12 @@ Host github.com
 }
 
 Write-Log "OpenSSH fully configured" "OK"
+} else { Write-Log "Skipped 14-DevTools.openssh (disabled in config)" "INFO" }
 
 # ============================================================================
 # CUDA Toolkit
 # ============================================================================
+if (Test-Feature "14-DevTools.cuda") {
 Write-SubStep "CUDA Toolkit"
 
 Install-App "CUDA Toolkit"          -WingetId "Nvidia.CUDA"                     -ChocoId "cuda"
@@ -810,10 +821,12 @@ if ($cudaRoot) {
 # cuDNN requires NVIDIA developer login - cannot be automated
 # Install manually from: https://developer.nvidia.com/cudnn
 Write-Log "CUDA toolkit configured" "OK"
+} else { Write-Log "Skipped 14-DevTools.cuda (disabled in config)" "INFO" }
 
 # ============================================================================
 # SQL Server Tooling
 # ============================================================================
+if (Test-Feature "14-DevTools.sqlserver") {
 Write-SubStep "SQL Server Tooling"
 
 Install-App "SQL Server Management Studio" -WingetId "Microsoft.SQLServerManagementStudio" -ChocoId "sql-server-management-studio"
@@ -832,10 +845,12 @@ if (Get-Module -ListAvailable -Name SqlServer -ErrorAction SilentlyContinue) {
 }
 
 Write-Log "SQL Server tooling installed (SSMS, Azure Data Studio)" "OK"
+} else { Write-Log "Skipped 14-DevTools.sqlserver (disabled in config)" "INFO" }
 
 # ============================================================================
 # OpenSSL CLI Tooling
 # ============================================================================
+if (Test-Feature "14-DevTools.openssl") {
 Write-SubStep "OpenSSL CLI"
 
 # Install standalone OpenSSL (not just vcpkg library)
@@ -864,10 +879,12 @@ foreach ($osp in $opensslPaths) {
 }
 
 Write-Log "OpenSSL CLI configured" "OK"
+} else { Write-Log "Skipped 14-DevTools.openssl (disabled in config)" "INFO" }
 
 # ============================================================================
 # Document Processing (Pandoc, qpdf, LaTeX)
 # ============================================================================
+if (Test-Feature "14-DevTools.doc_processing") {
 Write-SubStep "Document Processing"
 
 Install-App "Pandoc"               -WingetId "JohnMacFarlane.Pandoc"            -ChocoId "pandoc"         -ScoopId "pandoc"
@@ -910,12 +927,14 @@ if ($popplerUrl) {
 }
 
 Write-Log "Document processing installed (Pandoc, qpdf, MiKTeX, poppler-utils)" "OK"
+} else { Write-Log "Skipped 14-DevTools.doc_processing (disabled in config)" "INFO" }
 
 # TeX Live removed - MiKTeX already installed (serves same purpose, lighter)
 
 # ============================================================================
 # Android SDK (standalone, API 32+)
 # ============================================================================
+if (Test-Feature "14-DevTools.android_sdk") {
 Write-SubStep "Android SDK"
 
 $androidSdkRoot = "C:\android-sdk"
@@ -1463,10 +1482,12 @@ if (Test-Path $sdkmanager) {
 } # end Android SDK else block (preflight check)
 
 Write-Log "Dev & security tools installed" "OK"
+} else { Write-Log "Skipped 14-DevTools.android_sdk (disabled in config)" "INFO" }
 
 # ============================================================================
 # pip - ensure available in PATH + global tools
 # ============================================================================
+if (Test-Feature "14-DevTools.python_pip") {
 Write-SubStep "Python pip global tools"
 
 # Refresh PATH
@@ -1597,10 +1618,12 @@ if ($pythonExe) {
 } else {
     Write-Log "Python not found - pip global tools skipped" "WARN"
 }
+} else { Write-Log "Skipped 14-DevTools.python_pip (disabled in config)" "INFO" }
 
 # ============================================================================
 # Rust + Cargo Tooling
 # ============================================================================
+if (Test-Feature "14-DevTools.rust") {
 Write-SubStep "Rust & Cargo Tooling"
 
 Install-App "Rust (rustup)" -WingetId "Rustlang.Rustup" -ChocoId "rustup.install" -ScoopId "rustup"
@@ -1704,10 +1727,12 @@ if ($rustupExe) {
 } else {
     Write-Log "Rust/rustup not found - cargo tools skipped" "WARN"
 }
+} else { Write-Log "Skipped 14-DevTools.rust (disabled in config)" "INFO" }
 
 # ============================================================================
 # Go Toolchain
 # ============================================================================
+if (Test-Feature "14-DevTools.go") {
 Write-SubStep "Go Toolchain"
 
 # Ensure Go is installed (also installed in module 16, but be idempotent)
@@ -1826,10 +1851,12 @@ if ($goExe) {
 } else {
     Write-Log "Go not found - Go tools skipped" "WARN"
 }
+} else { Write-Log "Skipped 14-DevTools.go (disabled in config)" "INFO" }
 
 # ============================================================================
 # Infrastructure / Cloud / Kubernetes
 # ============================================================================
+if (Test-Feature "14-DevTools.infra_k8s") {
 Write-SubStep "Infrastructure & Kubernetes"
 
 Install-App "Terraform"             -WingetId "Hashicorp.Terraform"            -ChocoId "terraform"      -ScoopId "terraform"
@@ -1839,10 +1866,12 @@ Install-App "Helm"                  -WingetId "Helm.Helm"                      -
 Install-App "Minikube"              -WingetId "Kubernetes.minikube"            -ChocoId "minikube"        -ScoopId "minikube"
 
 Write-Log "Infrastructure tools installed" "OK"
+} else { Write-Log "Skipped 14-DevTools.infra_k8s (disabled in config)" "INFO" }
 
 # ============================================================================
 # Container Extras (Podman, lazydocker, dive)
 # ============================================================================
+if (Test-Feature "14-DevTools.containers") {
 Write-SubStep "Container Extras"
 
 Install-App "Podman"                -WingetId "RedHat.Podman"                  -ChocoId "podman-cli"
@@ -1866,10 +1895,12 @@ if (-not (Get-Command ctop -ErrorAction SilentlyContinue) -and -not (Test-Path "
 }
 
 Write-Log "Container extras installed (Podman, lazydocker, dive, ctop)" "OK"
+} else { Write-Log "Skipped 14-DevTools.containers (disabled in config)" "INFO" }
 
 # ============================================================================
 # gRPC / Protobuf Tooling
 # ============================================================================
+if (Test-Feature "14-DevTools.grpc") {
 Write-SubStep "gRPC & Protobuf"
 
 Install-App "Protobuf (protoc)"     -WingetId "Google.Protobuf"               -ChocoId "protoc"         -ScoopId "protobuf"
@@ -1924,10 +1955,12 @@ if ($evansUrl) {
 }
 
 Write-Log "gRPC/Protobuf tooling installed (protoc, buf, grpcurl, evans)" "OK"
+} else { Write-Log "Skipped 14-DevTools.grpc (disabled in config)" "INFO" }
 
 # ============================================================================
 # Dev Extras (Graphviz, SQLite, Meld)
 # ============================================================================
+if (Test-Feature "14-DevTools.dev_extras") {
 Write-SubStep "Dev Extras"
 
 Install-App "Graphviz"              -WingetId "Graphviz.Graphviz"              -ChocoId "graphviz"       -ScoopId "graphviz"
@@ -1936,6 +1969,7 @@ Install-App "DB Browser for SQLite" -WingetId "DBBrowserForSQLite.DBBrowserForSQ
 Install-App "Meld"                  -WingetId "Meld.Meld"                      -ChocoId "meld"
 
 Write-Log "Dev extras installed" "OK"
+} else { Write-Log "Skipped 14-DevTools.dev_extras (disabled in config)" "INFO" }
 
 Write-Log "Module 14 - Dev Tools completed" "OK"
 

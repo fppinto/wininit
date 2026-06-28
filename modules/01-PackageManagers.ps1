@@ -3,6 +3,7 @@
 Write-Section "Section 1: Package Managers" "Installing winget, scoop, and Chocolatey"
 
 # --- 1a. Winget ---
+if (Test-Feature "01-PackageManagers.winget") {
 Write-Log "Checking winget..."
 if (Get-Command winget -ErrorAction SilentlyContinue) {
     Write-Log "winget is already available" "OK"
@@ -21,8 +22,10 @@ if (Get-Command winget -ErrorAction SilentlyContinue) {
         Remove-Item $msixPath, $licPath -ErrorAction SilentlyContinue
     }
 }
+} else { Write-Log "Skipped 01-PackageManagers.winget (disabled in config)" "INFO" }
 
 # --- 1b. Scoop (must run as non-elevated user) ---
+if (Test-Feature "01-PackageManagers.scoop") {
 Write-Log "Checking scoop..."
 if (Get-Command scoop -ErrorAction SilentlyContinue) {
     Write-Log "scoop is already available" "OK"
@@ -72,8 +75,10 @@ if (Get-Command scoop -ErrorAction SilentlyContinue) {
         Write-Log "scoop extras and versions buckets added" "OK"
     }
 }
+} else { Write-Log "Skipped 01-PackageManagers.scoop (disabled in config)" "INFO" }
 
 # --- 1c. Chocolatey ---
+if (Test-Feature "01-PackageManagers.choco") {
 Write-Log "Checking Chocolatey..."
 if (Get-Command choco -ErrorAction SilentlyContinue) {
     Write-Log "Chocolatey is already available" "OK"
@@ -85,6 +90,7 @@ if (Get-Command choco -ErrorAction SilentlyContinue) {
         Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
     }
 }
+} else { Write-Log "Skipped 01-PackageManagers.choco (disabled in config)" "INFO" }
 
 # Refresh PATH so new package managers are available
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" +

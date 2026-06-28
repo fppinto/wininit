@@ -72,6 +72,7 @@ if (-not $targetReleaseVersion -and $pinCurrentFeatureRelease -and $osVersionInf
     }
 }
 
+if (Test-Feature "18-FinalConfig.windows_update") {
 Write-Log "Configuring uptime-safe Windows Update policy..."
 
 $wuValuesToRemove = @(
@@ -142,11 +143,14 @@ if ($pinCurrentFeatureRelease -and $targetReleaseVersion) {
     }
     Write-Log "Feature release pin disabled - future feature updates may be offered automatically" "WARN"
 }
+} else { Write-Log "Skipped 18-FinalConfig.windows_update (disabled in config)" "INFO" }
 
 # ============================================================================
 # System Restore
 # ============================================================================
 Write-SubStep "System Restore"
+
+if (Test-Feature "18-FinalConfig.system_restore") {
 
 # --- Enable System Restore on C: ---
 Write-Log "Enabling System Restore..."
@@ -168,12 +172,14 @@ Write-Log "System Restore enabled on C: (5% max)" "OK"
 Write-Log "Creating WinInit restore point..."
 Checkpoint-Computer -Description "WinInit Complete" -RestorePointType "APPLICATION_INSTALL" -ErrorAction SilentlyContinue
 Write-Log "Restore point 'WinInit Complete' created" "OK"
+} else { Write-Log "Skipped 18-FinalConfig.system_restore (disabled in config)" "INFO" }
 
 # ============================================================================
 # Startup & Session Restore
 # ============================================================================
 Write-SubStep "Startup & Session Restore"
 
+if (Test-Feature "18-FinalConfig.startup_config") {
 # --- Minimal Startup - Clean out everything except essentials ---
 Write-Log "Cleaning startup entries..."
 
@@ -348,10 +354,12 @@ if (-not (Test-Path $wtStartupLnk)) {
         Write-Log "Windows Terminal not found - skipping startup entry" "WARN"
     }
 }
+} else { Write-Log "Skipped 18-FinalConfig.startup_config (disabled in config)" "INFO" }
 
 # ============================================================================
 # System Cleanup - Temp Files, Caches, Update Leftovers
 # ============================================================================
+if (Test-Feature "18-FinalConfig.system_cleanup") {
 Write-Log "Running system cleanup..."
 
 # --- Temp files ---
@@ -488,6 +496,7 @@ Write-Log "Dev caches cleared (npm, pip, cargo)" "OK"
 
 # --- Calculate space freed ---
 Write-Log "System cleanup complete" "OK"
+} else { Write-Log "Skipped 18-FinalConfig.system_cleanup (disabled in config)" "INFO" }
 
 # ============================================================================
 # Run Windows Update check
@@ -513,6 +522,7 @@ try {
 # ============================================================================
 # Weekly Update Scheduled Task
 # ============================================================================
+if (Test-Feature "18-FinalConfig.weekly_update_task") {
 $updateTaskName = "WinInit-WeeklyUpdate"
 $updateScript = Join-Path $PSScriptRoot "..\update.ps1"
 if ($enableScheduledUpdates) {
@@ -560,6 +570,7 @@ if ($enableScheduledUpdates) {
         Write-Log "Failed to remove scheduled task '$updateTaskName': $_" "WARN"
     }
 }
+} else { Write-Log "Skipped 18-FinalConfig.weekly_update_task (disabled in config)" "INFO" }
 
 # ============================================================================
 # Post-Install Verification
