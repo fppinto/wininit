@@ -219,6 +219,17 @@ if ($tomlConfig.ContainsKey("apps") -and $tomlConfig["apps"].ContainsKey("skip")
 }
 $script:AppsSkip = @($script:AppsSkip | Where-Object { $_ } | Select-Object -Unique)
 
+# --- Per-item skip lists for the list-style modules (Debloat, Services) ---
+# Items listed here are KEPT (not removed/disabled). Empty = full default run.
+$script:DebloatSkip = @()
+if ($tomlConfig.ContainsKey("debloat") -and $tomlConfig["debloat"].ContainsKey("skip")) {
+    $script:DebloatSkip = @($tomlConfig["debloat"]["skip"] | Where-Object { $_ })
+}
+$script:ServicesSkip = @()
+if ($tomlConfig.ContainsKey("services") -and $tomlConfig["services"].ContainsKey("skip")) {
+    $script:ServicesSkip = @($tomlConfig["services"]["skip"] | Where-Object { $_ })
+}
+
 # --- Privacy level ---
 $script:PrivacyLevel = "strict"
 if ($profileConfig -and $profileConfig.privacy_level) {
