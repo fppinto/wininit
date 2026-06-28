@@ -84,7 +84,12 @@ $installedProv = @(Get-AppxProvisionedPackage -Online -ErrorAction SilentlyConti
 
 # Filter to only apps that are actually still installed
 $bloatPresent = @()
+$debloatSkip = @($script:DebloatSkip)
 foreach ($app in $bloatApps) {
+    if ($debloatSkip -contains $app) {
+        Write-Log "Keeping (user opted out): $app" "INFO"
+        continue
+    }
     $pattern = $app -replace '\*', '.*'
     $found = $installedAppx | Where-Object { $_ -match $pattern }
     $foundProv = $installedProv | Where-Object { $_ -match $pattern }
@@ -133,6 +138,7 @@ if ($bloatPresent.Count -eq 0) {
 
 $ProgressPreference = 'Continue'
 
+if (Test-Feature "06-Debloat.onenote") {
 # --- Uninstall OneNote desktop version ---
 Write-Log "Removing OneNote desktop version..."
 # Use Invoke-Silent so winget doesn't leak output
@@ -144,7 +150,9 @@ if (Test-Path $officeC2R) {
     Invoke-Silent $officeC2R "scenario=install scenariosubtype=ARP sourcetype=None productstoremove=OneNoteRetail.16_en-us_x-none culture=en-us version.16=16.0 DisplayLevel=False" >$null 2>&1
 }
 Write-Log "OneNote desktop version removed" "OK"
+} else { Write-Log "Skipped 06-Debloat.onenote (disabled in config)" "INFO" }
 
+if (Test-Feature "06-Debloat.disable_store_reinstall") {
 # Prevent Store from auto-reinstalling removed apps
 $StoreContentPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager"
 Set-ItemProperty -Path $StoreContentPath -Name "SilentInstalledAppsEnabled" -Value 0 -Type DWord
@@ -152,7 +160,9 @@ Set-ItemProperty -Path $StoreContentPath -Name "PreInstalledAppsEnabled"    -Val
 Set-ItemProperty -Path $StoreContentPath -Name "PreInstalledAppsEverEnabled" -Value 0 -Type DWord
 Set-ItemProperty -Path $StoreContentPath -Name "OemPreInstalledAppsEnabled" -Value 0 -Type DWord
 Write-Log "Store auto-reinstall of bloatware disabled" "OK"
+} else { Write-Log "Skipped 06-Debloat.disable_store_reinstall (disabled in config)" "INFO" }
 
+if (Test-Feature "06-Debloat.xbox") {
 # --- Full Xbox Component Annihilation ---
 Write-Log "Fully uninstalling all Xbox components..."
 
@@ -226,5 +236,6 @@ if ($currentSV) {
 }
 
 Write-Log "Xbox components fully uninstalled and blocked" "OK"
+} else { Write-Log "Skipped 06-Debloat.xbox (disabled in config)" "INFO" }
 
 Write-Log "Section 6: UWP Bloatware Removal completed" "OK"

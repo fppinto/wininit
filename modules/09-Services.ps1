@@ -8,6 +8,7 @@ $ProgressPreference = 'SilentlyContinue'
 $WarningPreference = 'SilentlyContinue'
 
 # --- 9a. Disable Fax Service ---
+if (@($script:ServicesSkip) -notcontains "Fax") {
 Write-Log "Disabling Fax service..."
 Stop-Service -Name "Fax" -Force -ErrorAction SilentlyContinue
 Set-Service  -Name "Fax" -StartupType Disabled -ErrorAction SilentlyContinue
@@ -16,8 +17,10 @@ if (Test-Path $FaxPath) {
     Set-ItemProperty -Path $FaxPath -Name "Start" -Value 4 -Type DWord
 }
 Write-Log "Fax service disabled" "OK"
+} else { Write-Log "Keeping service (user opted out): Fax" "INFO" }
 
 # --- 9b. Disable Windows Insider Service ---
+if (@($script:ServicesSkip) -notcontains "wisvc") {
 Write-Log "Disabling Windows Insider service..."
 Stop-Service -Name "wisvc" -Force -ErrorAction SilentlyContinue
 Set-Service  -Name "wisvc" -StartupType Disabled -ErrorAction SilentlyContinue
@@ -30,8 +33,10 @@ $FlightingPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
 if (-not (Test-Path $FlightingPath)) { New-Item -Path $FlightingPath -Force | Out-Null }
 Set-ItemProperty -Path $FlightingPath -Name "ManagePreviewBuildsPolicyValue" -Value 0 -Type DWord
 Write-Log "Windows Insider service disabled" "OK"
+} else { Write-Log "Keeping service (user opted out): wisvc" "INFO" }
 
 # --- 9c. Disable Phone Service ---
+if (@($script:ServicesSkip) -notcontains "PhoneSvc") {
 Write-Log "Disabling Phone Service..."
 Stop-Service -Name "PhoneSvc" -Force -ErrorAction SilentlyContinue
 Set-Service  -Name "PhoneSvc" -StartupType Disabled -ErrorAction SilentlyContinue
@@ -40,8 +45,10 @@ if (Test-Path $PhoneSvcPath) {
     Set-ItemProperty -Path $PhoneSvcPath -Name "Start" -Value 4 -Type DWord
 }
 Write-Log "Phone Service disabled" "OK"
+} else { Write-Log "Keeping service (user opted out): PhoneSvc" "INFO" }
 
 # --- 9d. Disable Retail Demo Service ---
+if (@($script:ServicesSkip) -notcontains "RetailDemo") {
 Write-Log "Disabling Retail Demo Service..."
 Stop-Service -Name "RetailDemo" -Force -ErrorAction SilentlyContinue
 Set-Service  -Name "RetailDemo" -StartupType Disabled -ErrorAction SilentlyContinue
@@ -54,8 +61,10 @@ $RetailPolicy = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\RetailDemo"
 if (-not (Test-Path $RetailPolicy)) { New-Item -Path $RetailPolicy -Force | Out-Null }
 Set-ItemProperty -Path $RetailPolicy -Name "Enabled" -Value 0 -Type DWord
 Write-Log "Retail Demo Service disabled" "OK"
+} else { Write-Log "Keeping service (user opted out): RetailDemo" "INFO" }
 
 # --- 9e. Disable Windows Biometric Service ---
+if (@($script:ServicesSkip) -notcontains "WbioSrvc") {
 Write-Log "Disabling Windows Biometric Service..."
 Stop-Service -Name "WbioSrvc" -Force -ErrorAction SilentlyContinue
 Set-Service  -Name "WbioSrvc" -StartupType Disabled -ErrorAction SilentlyContinue
@@ -68,6 +77,7 @@ $BioPolicyPath = "HKLM:\SOFTWARE\Policies\Microsoft\Biometrics"
 if (-not (Test-Path $BioPolicyPath)) { New-Item -Path $BioPolicyPath -Force | Out-Null }
 Set-ItemProperty -Path $BioPolicyPath -Name "Enabled" -Value 0 -Type DWord
 Write-Log "Windows Biometric Service disabled" "OK"
+} else { Write-Log "Keeping service (user opted out): WbioSrvc" "INFO" }
 
 # --- 9f. Disable Bulk Services (performance) ---
 Write-Log "Disabling unnecessary services in bulk..."
@@ -95,7 +105,12 @@ $junkServices = @(
     @{ name = "WdiSystemHost";  desc = "Diagnostic System Host" }
 )
 
+$servicesSkip = @($script:ServicesSkip)
 foreach ($svc in $junkServices) {
+    if ($servicesSkip -contains $svc.name) {
+        Write-Log "Keeping service (user opted out): $($svc.name)" "INFO"
+        continue
+    }
     Stop-Service -Name $svc.name -Force -ErrorAction SilentlyContinue
     Set-Service  -Name $svc.name -StartupType Disabled -ErrorAction SilentlyContinue
     $svcRegPath = "HKLM:\SYSTEM\CurrentControlSet\Services\$($svc.name)"
@@ -113,6 +128,7 @@ if (Test-Path $CDPTemplate) {
 
 Write-Log "Bulk services disabled ($($junkServices.Count) services)" "OK"
 
+if (Test-Feature "09-Services.ink_workspace") {
 # --- Full Windows Ink / Handwriting / Pen Removal ---
 Write-Log "Fully removing Windows Ink components..."
 
@@ -186,5 +202,6 @@ Set-ItemProperty -Path $TouchKB -Name "EnablePredictionSpaceInsertion" -Value 0 
 Set-ItemProperty -Path $TouchKB -Name "EnableDoubleTapSpace"      -Value 0 -Type DWord -ErrorAction SilentlyContinue
 
 Write-Log "Windows Ink fully removed and disabled" "OK"
+} else { Write-Log "Skipped 09-Services.ink_workspace (disabled in config)" "INFO" }
 
 Write-Log "Module 09-Services completed" "OK"
