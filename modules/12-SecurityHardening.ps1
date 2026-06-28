@@ -8,6 +8,7 @@ $ProgressPreference = 'SilentlyContinue'
 $WarningPreference = 'SilentlyContinue'
 
 # --- 12a. Disable SMBv1 ---
+if (Test-Feature "12-SecurityHardening.smbv1") {
 Write-Log "Disabling SMBv1 (legacy, exploitable)..."
 $smb1Features = @("SMB1Protocol", "SMB1Protocol-Client", "SMB1Protocol-Server")
 $smb1AlreadyOff = $true
@@ -34,13 +35,16 @@ if ($smb1AlreadyOff) {
 # Registry belt-and-suspenders
 $SMBPath = "HKLM:\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters"
 Set-ItemProperty -Path $SMBPath -Name "SMB1" -Value 0 -Type DWord
+} else { Write-Log "Skipped 12-SecurityHardening.smbv1 (disabled in config)" "INFO" }
 
 # --- 12b. Disable LLMNR ---
+if (Test-Feature "12-SecurityHardening.llmnr") {
 Write-Log "Disabling LLMNR (Link-Local Multicast Name Resolution)..."
 $DNSClientPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\DNSClient"
 if (-not (Test-Path $DNSClientPath)) { New-Item -Path $DNSClientPath -Force | Out-Null }
 Set-ItemProperty -Path $DNSClientPath -Name "EnableMulticast" -Value 0 -Type DWord
 Write-Log "LLMNR disabled" "OK"
+} else { Write-Log "Skipped 12-SecurityHardening.llmnr (disabled in config)" "INFO" }
 
 # ============================================================================
 # SECTION 13 - Windows Features (Hyper-V, UTF-8)
@@ -48,6 +52,7 @@ Write-Log "LLMNR disabled" "OK"
 Write-Section "Windows Features"
 
 # --- 13b. Enable UTF-8 System-Wide ---
+if (Test-Feature "12-SecurityHardening.utf8") {
 Write-Log "Enabling UTF-8 system-wide (Beta: Use Unicode UTF-8)..."
 # This sets the "Use Unicode UTF-8 for worldwide language support" checkbox
 $NLSPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Nls\CodePage"
@@ -63,6 +68,7 @@ Set-ItemProperty -Path $ConsoleRegPath -Name "CodePage" -Value 65001 -Type DWord
 # PowerShell output encoding
 [System.Environment]::SetEnvironmentVariable("PYTHONIOENCODING", "utf-8", "User")
 Write-Log "UTF-8 enabled system-wide (code pages set to 65001)" "OK"
+} else { Write-Log "Skipped 12-SecurityHardening.utf8 (disabled in config)" "INFO" }
 
 # ============================================================================
 # Enable Windows Optional Features (comprehensive)
@@ -70,44 +76,74 @@ Write-Log "UTF-8 enabled system-wide (code pages set to 65001)" "OK"
 Write-Log "Enabling Windows optional features..."
 
 # Features that use Enable-WindowsOptionalFeature (FeatureName style)
-$enableFeatures = @(
-    # --- Hyper-V (full suite) ---
-    "Microsoft-Hyper-V-All",
-    "Microsoft-Hyper-V",
-    "Microsoft-Hyper-V-Tools-All",
-    "Microsoft-Hyper-V-Management-PowerShell",
-    "Microsoft-Hyper-V-Management-Clients",
-    "Microsoft-Hyper-V-Hypervisor",
-    "Microsoft-Hyper-V-Services",
-    # --- Virtualization Platform ---
-    "VirtualMachinePlatform",
-    "HypervisorPlatform",
-    # --- Containers ---
-    "Containers",
-    "Containers-DisposableClientVM",     # Windows Sandbox
-    # --- WSL ---
-    "Microsoft-Windows-Subsystem-Linux",
-    # --- .NET Frameworks ---
-    "NetFx3",                             # .NET 3.5
-    "NetFx4-AdvSrvs",                     # .NET 4.8 Advanced Services
-    "NetFx4Extended-ASPNET45",            # ASP.NET 4.5+
-    "WCF-Services45",                     # WCF Services
-    "WCF-TCP-PortSharing45",              # WCF TCP Port Sharing
-    # --- Network Tools ---
-    "TelnetClient",                        # Telnet client
-    "TFTP",                                # TFTP client
-    # --- Misc ---
-    "SimpleTCP",
-    # --- Brandless Boot (removes Windows logo during boot) ---
-    "Client-DeviceLockdown",
-    "Client-EmbeddedBootExp"
-)
+# Built conditionally so each feature group can be disabled in config.
+$enableFeatures = @()
+if (Test-Feature "12-SecurityHardening.hyperv") {
+    $enableFeatures += @(
+        # --- Hyper-V (full suite) ---
+        "Microsoft-Hyper-V-All",
+        "Microsoft-Hyper-V",
+        "Microsoft-Hyper-V-Tools-All",
+        "Microsoft-Hyper-V-Management-PowerShell",
+        "Microsoft-Hyper-V-Management-Clients",
+        "Microsoft-Hyper-V-Hypervisor",
+        "Microsoft-Hyper-V-Services"
+    )
+} else { Write-Log "Skipped 12-SecurityHardening.hyperv (disabled in config)" "INFO" }
+if (Test-Feature "12-SecurityHardening.containers_sandbox") {
+    $enableFeatures += @(
+        # --- Virtualization Platform ---
+        "VirtualMachinePlatform",
+        "HypervisorPlatform",
+        # --- Containers ---
+        "Containers",
+        "Containers-DisposableClientVM"      # Windows Sandbox
+    )
+} else { Write-Log "Skipped 12-SecurityHardening.containers_sandbox (disabled in config)" "INFO" }
+if (Test-Feature "12-SecurityHardening.wsl") {
+    $enableFeatures += @(
+        # --- WSL ---
+        "Microsoft-Windows-Subsystem-Linux",
+        "VirtualMachinePlatform"              # WSL2 dependency (also enabled by containers_sandbox)
+    )
+} else { Write-Log "Skipped 12-SecurityHardening.wsl (disabled in config)" "INFO" }
+# De-duplicate so shared dependencies (e.g. VirtualMachinePlatform) aren't enabled twice
+$enableFeatures = @($enableFeatures | Select-Object -Unique)
+if (Test-Feature "12-SecurityHardening.dotnet") {
+    $enableFeatures += @(
+        # --- .NET Frameworks ---
+        "NetFx3",                             # .NET 3.5
+        "NetFx4-AdvSrvs",                     # .NET 4.8 Advanced Services
+        "NetFx4Extended-ASPNET45",            # ASP.NET 4.5+
+        "WCF-Services45",                     # WCF Services
+        "WCF-TCP-PortSharing45"               # WCF TCP Port Sharing
+    )
+} else { Write-Log "Skipped 12-SecurityHardening.dotnet (disabled in config)" "INFO" }
+if (Test-Feature "12-SecurityHardening.network_features") {
+    $enableFeatures += @(
+        # --- Network Tools ---
+        "TelnetClient",                        # Telnet client
+        "TFTP",                                # TFTP client
+        # --- Misc ---
+        "SimpleTCP"
+    )
+} else { Write-Log "Skipped 12-SecurityHardening.network_features (disabled in config)" "INFO" }
+if (Test-Feature "12-SecurityHardening.brandless_boot") {
+    $enableFeatures += @(
+        # --- Brandless Boot (removes Windows logo during boot) ---
+        "Client-DeviceLockdown",
+        "Client-EmbeddedBootExp"
+    )
+} else { Write-Log "Skipped 12-SecurityHardening.brandless_boot features (disabled in config)" "INFO" }
 
 # Capabilities that use Add-WindowsCapability (Name~~~~ style)
-$enableCapabilities = @(
-    "WirelessDisplay.Client~~~~0.0.1.0",                           # Miracast
-    "Microsoft-Windows-Client-EmbeddedExp-Package~~~~0.0.1.0"      # WMIC
-)
+$enableCapabilities = @()
+if (Test-Feature "12-SecurityHardening.network_features") {
+    $enableCapabilities += @(
+        "WirelessDisplay.Client~~~~0.0.1.0",                           # Miracast
+        "Microsoft-Windows-Client-EmbeddedExp-Package~~~~0.0.1.0"      # WMIC
+    )
+}
 
 $featureResults = @{ enabled = 0; skipped = 0; failed = 0 }
 
@@ -183,6 +219,7 @@ Write-Log "Features: $($featureResults.enabled) enabled, $($featureResults.skipp
 # WMIC and Wireless Display already handled by capabilities loop above
 
 # --- .NET 3.5 via DISM (most reliable method) ---
+if (Test-Feature "12-SecurityHardening.dotnet") {
 Write-Log "Ensuring .NET 3.5..."
 $dotnet35 = Get-WindowsOptionalFeature -Online -FeatureName "NetFx3" -ErrorAction SilentlyContinue
 if ($dotnet35 -and $dotnet35.State -ne "Enabled") {
@@ -199,8 +236,10 @@ if ($dotnet48Key -and $dotnet48Key.Release -ge 528040) {
 } else {
     Install-App ".NET 4.8 Runtime" -WingetId "Microsoft.DotNet.Framework.DeveloperPack_4" -ChocoId "dotnet4.8"
 }
+} else { Write-Log "Skipped 12-SecurityHardening.dotnet (disabled in config)" "INFO" }
 
 # --- Brandless Boot (remove Windows logo, show plain boot) ---
+if (Test-Feature "12-SecurityHardening.brandless_boot") {
 Write-Log "Configuring brandless boot..."
 $brandlessPath = "HKLM:\SOFTWARE\Microsoft\Windows Embedded\EmbeddedLogon"
 if (-not (Test-Path $brandlessPath)) { New-Item -Path $brandlessPath -Force -ErrorAction SilentlyContinue | Out-Null }
@@ -209,8 +248,10 @@ Set-ItemProperty -Path $brandlessPath -Name "BrandingNeutral" -Value 1 -Type DWo
 bcdedit /set "{current}" bootux disabled >$null 2>&1
 bcdedit /set "{current}" quietboot yes >$null 2>&1
 Write-Log "Brandless/quiet boot configured" "OK"
+} else { Write-Log "Skipped 12-SecurityHardening.brandless_boot (disabled in config)" "INFO" }
 
 # --- Sysmon (Sysinternals System Monitor) ---
+if (Test-Feature "12-SecurityHardening.sysmon") {
 Write-Log "Installing Sysmon..."
 $sysmonExe = Get-Command sysmon -ErrorAction SilentlyContinue
 if (-not $sysmonExe) {
@@ -235,14 +276,17 @@ if (-not $sysmonExe) {
 } else {
     Write-Log "Sysmon already installed" "OK"
 }
+} else { Write-Log "Skipped 12-SecurityHardening.sysmon (disabled in config)" "INFO" }
 
 Write-Log "Windows optional features configured" "OK"
 
 # --- Disable Reserved Storage ---
+if (Test-Feature "12-SecurityHardening.reserved_storage") {
 Write-Log "Disabling Reserved Storage..."
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\ReserveManager" `
     -Name "ShippedWithReserves" -Value 0 -Type DWord -ErrorAction SilentlyContinue
 dism /Online /Set-ReservedStorageState /State:Disabled >$null 2>&1
 Write-Log "Reserved Storage disabled" "OK"
+} else { Write-Log "Skipped 12-SecurityHardening.reserved_storage (disabled in config)" "INFO" }
 
 Write-Log "Module 12-SecurityHardening completed" "OK"

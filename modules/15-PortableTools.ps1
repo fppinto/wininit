@@ -11,15 +11,9 @@ $binDir = "C:\bin"
 if (-not (Test-Path $binDir)) { New-Item -ItemType Directory -Path $binDir -Force | Out-Null }
 
 # Add C:\bin to system PATH permanently (if not already there)
-$machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
-if ($machinePath -notmatch [regex]::Escape($binDir)) {
-    [System.Environment]::SetEnvironmentVariable("Path", "$machinePath;$binDir", "Machine")
-    $env:Path = "$env:Path;$binDir"
-    Write-Log "C:\bin added to system PATH" "OK"
-} else {
-    Write-Log "C:\bin already in PATH" "OK"
-}
+$null = Add-ToSystemPath -Directory $binDir
 
+if (Test-Feature "15-PortableTools.bin_tools") {
 # --- GNU/Unix-like tools for Windows (dynamically resolved from GitHub) ---
 
 # Define tools: Repo, asset pattern (regex), exe name, archive type
@@ -71,7 +65,7 @@ Install-PortableBin -Name "wget" `
     -Url "https://eternallybored.org/misc/wget/1.21.4/64/wget.exe" `
     -ExeName "wget.exe" -ArchiveType "direct"
 
-Stop-Spinner -FinalMessage "C:\bin: $((Get-ChildItem $binDir -Filter '*.exe' -ErrorAction SilentlyContinue).Count) tools installed" -Status "OK"
+Stop-Spinner -FinalMessage "C:\bin: $(@(Get-ChildItem $binDir -Filter '*.exe' -ErrorAction SilentlyContinue).Count) tools installed" -Status "OK"
 
 # --- Additional C:\bin tools ---
 
@@ -162,6 +156,7 @@ if (Test-Path (Join-Path $binDir "trid.exe")) {
 Install-App "Windows SDK (signtool)" -WingetId "Microsoft.WindowsSDK.10.0.26100" -ChocoId "windows-sdk-10-version-2104-windbg"
 
 Write-Log "Additional C:\bin tools installed" "OK"
+} else { Write-Log "Skipped 15-PortableTools.bin_tools (disabled in config)" "INFO" }
 
 # ============================================================================
 # C:\apps Portable Applications
@@ -172,13 +167,9 @@ $appsDir = "C:\apps"
 if (-not (Test-Path $appsDir)) { New-Item -ItemType Directory -Path $appsDir -Force | Out-Null }
 
 # Add C:\apps to system PATH too (some tools need their folder)
-$machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
-if ($machinePath -notmatch [regex]::Escape($appsDir)) {
-    [System.Environment]::SetEnvironmentVariable("Path", "$machinePath;$appsDir", "Machine")
-    $env:Path = "$env:Path;$appsDir"
-    Write-Log "C:\apps added to system PATH" "OK"
-}
+$null = Add-ToSystemPath -Directory $appsDir
 
+if (Test-Feature "15-PortableTools.apps_nirsoft") {
 # --- NirSoft Tools ---
 Install-PortableApp -Name "HashMyFiles" `
     -Url "https://www.nirsoft.net/utils/hashmyfiles-x64.zip"
@@ -200,7 +191,9 @@ Install-PortableApp -Name "USBDeview" `
 
 Install-PortableApp -Name "ProcessActivityView" `
     -Url "https://www.nirsoft.net/utils/processactivityview-x64.zip"
+} else { Write-Log "Skipped 15-PortableTools.apps_nirsoft (disabled in config)" "INFO" }
 
+if (Test-Feature "15-PortableTools.apps_reversing") {
 # --- Reverse Engineering / Debug / Decompilers ---
 
 # jadx - Java/Android decompiler (with bundled JRE)
@@ -257,7 +250,9 @@ Install-PortableApp -Name "HxD" `
 # APIMonitor - rohitab.com unreliable, use Internet Archive mirror
 Install-PortableApp -Name "APIMonitor" `
     -Url "https://archive.org/download/api-monitor-v2r13-setup-x86/api-monitor-v2r13-x86-x64.zip"
+} else { Write-Log "Skipped 15-PortableTools.apps_reversing (disabled in config)" "INFO" }
 
+if (Test-Feature "15-PortableTools.apps_remote") {
 # --- Screen / Remote ---
 # scrcpy - dynamic URL (version in filename)
 $scrcpyUrl = Get-GitHubReleaseUrl -Repo "Genymobile/scrcpy" -Pattern "scrcpy-win64-v[\d.]+\.zip$"
@@ -270,7 +265,9 @@ if ($scrcpyUrl) {
 # UltraVNC - direct download from uvnc.eu
 Install-PortableApp -Name "UltraVNC" `
     -Url "https://uvnc.eu/download/1640/UltraVNC_1640.zip"
+} else { Write-Log "Skipped 15-PortableTools.apps_remote (disabled in config)" "INFO" }
 
+if (Test-Feature "15-PortableTools.apps_misc") {
 # --- CEF Binary (Chromium Embedded Framework) ---
 # CEF builds change URL with each Chromium version - try spotifycdn, fall back gracefully
 Install-PortableApp -Name "CEFBinary" `
@@ -384,9 +381,10 @@ if (-not (Test-Path $yumiExfat)) {
         Write-Log "YUMI exFAT downloaded" "OK"
     } catch { Write-Log "YUMI exFAT download failed: $_" "ERROR" }
 }
+} else { Write-Log "Skipped 15-PortableTools.apps_misc (disabled in config)" "INFO" }
 
 Write-Log "C:\apps populated with portable applications" "OK"
-Write-Log "Apps directory: C:\apps - $(( Get-ChildItem $appsDir -Directory ).Count) tools extracted" "OK"
+Write-Log "Apps directory: C:\apps - $(@( Get-ChildItem $appsDir -Directory -ErrorAction SilentlyContinue ).Count) tools extracted" "OK"
 
 # ============================================================================
 # Archive tools in PATH (7z, unrar, etc.)
@@ -396,16 +394,12 @@ Write-Log "Ensuring archive tools are available in PATH..."
 # 7-Zip - add to PATH so 7z.exe works from any terminal
 $7zDir = "C:\Program Files\7-Zip"
 if (Test-Path $7zDir) {
-    $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
-    if ($machinePath -notmatch [regex]::Escape($7zDir)) {
-        [System.Environment]::SetEnvironmentVariable("Path", "$machinePath;$7zDir", "Machine")
-        $env:Path = "$env:Path;$7zDir"
-        Write-Log "7-Zip added to PATH (7z, 7za available from terminal)" "OK"
-    }
+    $null = Add-ToSystemPath -Directory $7zDir
 } else {
     Write-Log "7-Zip not found at $7zDir - install 7-Zip first" "WARN"
 }
 
+if (Test-Feature "15-PortableTools.bin_tools") {
 # unrar - download standalone unrar.exe to C:\bin
 Install-PortableBin -Name "unrar" `
     -Url "https://www.rarlab.com/rar/unrarw64.exe" `
@@ -423,6 +417,7 @@ if ($zstdUrl) {
 }
 
 Write-Log "Archive tools (7z, unrar, xz, zstd) available in PATH" "OK"
+} else { Write-Log "Skipped 15-PortableTools.bin_tools (archive tools, disabled in config)" "INFO" }
 
 Write-Log "Module 15 - Portable Tools completed" "OK"
 
